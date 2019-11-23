@@ -1,96 +1,27 @@
 #include <iostream>
 #include <vector>
+#include <algorithm>
+#include <cstdlib>
+#include <ctime>
 
+#include "GeneticAlgorithm.h"
+#include "ExampleOperators.h"
 
-
-//ZBIGNIEW MICHALEWICZ ALG GEN _ STR DAN = PROG EWOL ~STRONA 241+
-
-template<class Unit, class Crosser, class Mutator, class Evaluator>
-class GeneticAlgorithm
-{
-    std::vector<Unit> population;
-    std::vector<std::pair<float, int>> cum_dist; //dystrybuanta (wartość dystrybuanty, indeks jednostki w wektorze) 
-    Unit best_unit_ever; //best unit from all generations
-    int size;
-    float cross_prob;
-    float mutation_prob;
-
-    std::vector<Unit> selectToNextGen() //using cumulative distribution 
-    { 
-        std::vector<Unit> next_pop;
-    }
-
-public:
-
-    GeneticAlgorithm(int size, float corss_prob, float mutation_prob) 
-        : size(size), cross_prob(cross_prob), mutation_prob(mutation_prob)
-        {
-        }
-
-    void setPopulation(const std::vector<Unit>& pop)
-    {
-        population = pop;
-    }
-
-    void run(int epochs, float epsi = 0.000003f)
-    {
-        for(int i = 0; i < epochs /* && poprawa wieksza niz epsilon (np przez ostatnie 5 iteracji) */; i++)
-        {
-            selectToNextGen(); //evaluate and select
-            //crossover
-            //muatate
-            //repeat
-
-            //size * cross_prob
-            // for(int i = 0; i < size; i++)
-            //  if(rand_val() < cross_prob)
-            //      Crosser()(random_unit_1, random_unit_2)
-            // mutate
-            // for(unit in population)
-            //  if(rand_val() < mut_prob)
-            //      Mutator()(unit)
-
-            BaseRepr a,b;
-            Crosser()(a,b);
-            Mutator()(a);
-            Mutator()(b);
-        }
-    }
-};
-
-// przykład "klas które pełnią rolę operatorów"
-struct BaseRepr
-{
-    float v;
-};
-
-struct Mutator
-{
-    void operator()(BaseRepr& base_repr)
-    {
-        base_repr.v = -base_repr.v;
-    }
-};
-
-struct Crosser
-{
-    void operator()(BaseRepr& a, BaseRepr& b)
-    {
-        std::swap(a.v, b.v);
-    }
-};
-
-struct Evaluator
-{
-    float operator()(const BaseRepr& a)
-    {
-        return a.v;
-    }
-};
 
 int main()
 {
-    std::cout << "Hello World!\n";
-    GeneticAlgorithm<BaseRepr, Crosser, Mutator, Evaluator> ga;
+    srand(time(0));
+
+    //przykład z rozdziału 1.1
+    //BinaryChrom<10> liczba jest reprezentowana na 22 bitach (jak w przykładzie w książce)
+    GeneticAlgorithm<BinaryChrom<22>, BinaryCrosser, BinaryMutator, BinaryEvaluator> ga;
+    ga.initPopulation(50);
+    ga.setCrossoverProb(0.25F);
+    ga.setMutationProb(0.1); //to nie jest dokładnie to samo co w książce ale co tam
+    ga.run(150);
+    BinaryEvaluator ev;
+    BinaryChrom chr = ga.getBestChromosomeEver();
+    std::cout << "Maksymalna wartość funkcji f(x) = x * sin(10*pi*x) + 1.0 po 150 iteracjach wynosi:\n"
+        "f(" << ev.getX(chr) << ") = " << ev(chr) << '\n';
     return 0;
 }

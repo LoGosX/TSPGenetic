@@ -10,6 +10,7 @@ SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_HOME_DIRECTORY}/build")
 
 project(OKGen)
 
+include_directories("include")
 file(GLOB SOURCES "src/*.cpp")
 file(GLOB HEADERS "include/*.h")
 
