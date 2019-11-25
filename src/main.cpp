@@ -28,7 +28,7 @@ struct GridSearcher
 
 void test_tsp()
 {
-    auto data = randomPath(12);
+    auto data = randomPath(11);
     float best_path = minimumPathLength(data);
 
     TSPChromCreator creator(data.size());
@@ -61,16 +61,16 @@ void tsp()
     }
 
     float mut_low = 0.0001;
-    float mut_high = 0.1;
+    float mut_high = 0.25;
     int mut_res = 10;
     GridSearcher mut(mut_low, mut_high, mut_res);
 
-    float cross_low = 0.001;
-    float cross_high = 0.25;
+    float cross_low = 0.0001;
+    float cross_high = 0.5;
     int cross_res = 10;
 
     float pop_low = 100;
-    float pop_high = 1000;
+    float pop_high = 5000;
     int pop_res = 10;
 
     TSPChromCreator creator(n);
@@ -78,9 +78,10 @@ void tsp()
 
     GeneticAlgorithm<TSPChrom, TSPChromCreator, TSPCrosser, TSPMutator, TSPEvaluator>
                     ga(creator, TSPCrosser(), TSPMutator(), evaluator);
-    ga.setCrossoverProb(0.1255);
-    ga.setMutationProb(0.00006);
-    ga.initPopulation(730);
+    ga.setCrossoverProb(0.01);
+    ga.setMutationProb(0.01);
+    ga.initPopulation(1000);
+    ga.setOutFile("stats.txt");
     ga.run(10000);
     std::cout << evaluator.pathDist(ga.getBestChromosomeEver()) << std::endl;
 
@@ -105,7 +106,7 @@ void tsp()
                 ga.setCrossoverProb(cross_chnc);
                 ga.setMutationProb(mut_chnc);
                 ga.initPopulation(pop_size);
-                ga.run(1000);
+                ga.run(500);
                 auto b = ga.getBestChromosomeEver();
                 float val = evaluator.pathDist(b);
                 std::cout << "Mut: " << mut_chnc << " Cross: " << cross_chnc << " Pop: " << pop_size << " Path length: " << val << std::endl;

@@ -143,6 +143,6 @@ struct TSPEvaluator
         #if DEBUG
         std::cout << "TSPMutator::operator(TSPChrom&)" << std::endl;
         #endif // DEBUG
-        return 1 / (pathDist(chrom) + 0.0001F);
+        return 1.F / (pathDist(chrom) + 0.0001F);
     }
 };

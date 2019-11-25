@@ -2,6 +2,8 @@
 #include <vector>
 #include <algorithm>
 #include <utility>
+#include <fstream>
+#include <string>
 
 //ZBIGNIEW MICHALEWICZ ALG GEN _ STR DAN = PROG EWOL ~STRONA 241+
 
@@ -30,26 +32,56 @@ class GeneticAlgorithm
     float cross_prob;
     float mutation_prob;
     float curr_avg_fitness;
+    float total_population_fitness;
+    float population_variance;
+    float population_std_devation;
+    float pop_highest_eval;
+    float pop_lowest_eval;
 
-    void fillCumDist()
+    std::ofstream stats_file;
+    bool file_good {false};
+
+    void measureStatictics(bool measure_fitness=false)
     {
-        float total = 0;
+        if(!measure_fitness)
+            measurePopulationFitness();
+        population_variance = 0;
+        for(int i = 0; i < pop_size; i++)
+            population_variance += (evaluations[i] - curr_avg_fitness) * (evaluations[i] - curr_avg_fitness);
+        population_variance /= pop_size;
+        population_std_devation = sqrtf(population_variance);
+    }
+
+    void measurePopulationFitness()
+    {
+        total_population_fitness = 0;
+        pop_lowest_eval = 10000000000;
+        pop_highest_eval = -1;
         for(int i = 0; i < pop_size; i++)
         {
             evaluations[i] = evaluator(population[i]);
-            total += evaluations[i];
+            total_population_fitness += evaluations[i];
+            if(evaluations[i] > pop_highest_eval)
+                pop_highest_eval = evaluations[i];
+            if(evaluations[i] < pop_lowest_eval)
+                pop_lowest_eval = evaluations[i];
             if(evaluations[i] > best_evaluation)
             {
                 best_chrom_ever = population[i];
                 best_evaluation = evaluations[i];
             }
         }
+        curr_avg_fitness = total_population_fitness / pop_size;
+    }
+
+    void fillCumDist()
+    {
+        measurePopulationFitness();
         for(int i = 0; i < pop_size; i++)
-            cum_dist[i] = {evaluations[i] / total, i};
+            cum_dist[i] = {evaluations[i] / total_population_fitness, i};
         std::sort(begin(cum_dist), end(cum_dist));
         for(int i = 1; i < pop_size; i++)
             cum_dist[i].first += cum_dist[i-1].first;
-        curr_avg_fitness = total / pop_size;
     }
 
     int getChromosomeIndexFromDist(float rand_val)
@@ -60,13 +92,23 @@ class GeneticAlgorithm
         return it->second;
     }
 
-    void chooseNextPopulation()
+    void chooseNextPopulation(bool roulette = true)
     {
-        fillCumDist();
-        std::vector<Chromosome> next_pop(pop_size);
-        for(auto& chrom : next_pop)
-            chrom = population[getChromosomeIndexFromDist(randomFloat())];
-        population = next_pop;
+        if(roulette){
+            fillCumDist();
+            std::vector<Chromosome> next_pop(pop_size);
+            for(auto& chrom : next_pop)
+                chrom = population[getChromosomeIndexFromDist(randomFloat())];
+            population = next_pop;
+        }else //elitism
+        {
+            float best_percent = 0.1f;
+            measurePopulationFitness();
+            std::vector<std::pair<float,int>> x;
+            for(int i = 0; i < pop_size; i++)
+                x.emplace_back(evaluations[i], i);
+            std::sort(begin(x), end(x));
+        }
     }
 
     void crossover()
@@ -89,7 +131,17 @@ class GeneticAlgorithm
                 mutator(chrom);
     }
 
+    void dumpStats()
+    {
+        stats_file << "AvgFitness=" << curr_avg_fitness << " StdDev=" << population_std_devation << " GenBestFitness=" << pop_highest_eval << " GenLowestFitness=" << pop_lowest_eval << " BestFitness=" << best_evaluation << '\n';
+    }
+
 public:
+
+    void setOutFile(std::string path) {
+        file_good = true;
+        stats_file.open(std::string("stats_pop=") + std::to_string(pop_size) + std::string("_mut=") + std::to_string(mutation_prob) + std::string("_cross=") + std::to_string(cross_prob) + std::string(".txt"), std::ios::trunc);
+    }
 
     GeneticAlgorithm() = default;
     
@@ -120,11 +172,24 @@ public:
 
     void run(int epochs, float epsi = 0.000003f)
     {
+        if(file_good)
+        {
+            measureStatictics();
+            dumpStats();
+        }
         for(int i = 0; i < epochs /* && poprawa wieksza niz epsilon (np przez ostatnie 5 iteracji) */; i++)
         {
+            
             chooseNextPopulation();
             crossover();
             mutate();
+            if(file_good)
+            {
+                measureStatictics(false);
+                dumpStats();
+            }
         }
+        if(file_good)
+            stats_file.close();
     }
 };
