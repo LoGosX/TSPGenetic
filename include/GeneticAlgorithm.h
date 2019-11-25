@@ -6,7 +6,7 @@
 //ZBIGNIEW MICHALEWICZ ALG GEN _ STR DAN = PROG EWOL ~STRONA 241+
 
 //później rozdzielę na .h i .cpp
-template<class Chromosome, class Crosser, class Mutator, class Evaluator>
+template<class Chromosome, class ChromosomeCreator, class Crosser, class Mutator, class Evaluator>
 class GeneticAlgorithm
 {
     /*
@@ -14,10 +14,12 @@ class GeneticAlgorithm
     Crosser - defines cross operation between two chromosomes
     Mutator - defines mutation operation on a chromosome
     Evaluator - evaluates the solutions (larger == better)
+    ChromosomeCreator - creates and initializes chromosomes
     */
     Crosser crosser;
     Mutator mutator;
     Evaluator evaluator;
+    ChromosomeCreator creator;
 
     std::vector<Chromosome> population;
     std::vector<float> evaluations;
@@ -27,6 +29,7 @@ class GeneticAlgorithm
     int pop_size;
     float cross_prob;
     float mutation_prob;
+    float curr_avg_fitness;
 
     void fillCumDist()
     {
@@ -36,13 +39,17 @@ class GeneticAlgorithm
             evaluations[i] = evaluator(population[i]);
             total += evaluations[i];
             if(evaluations[i] > best_evaluation)
+            {
                 best_chrom_ever = population[i];
+                best_evaluation = evaluations[i];
+            }
         }
         for(int i = 0; i < pop_size; i++)
             cum_dist[i] = {evaluations[i] / total, i};
         std::sort(begin(cum_dist), end(cum_dist));
         for(int i = 1; i < pop_size; i++)
             cum_dist[i].first += cum_dist[i-1].first;
+        curr_avg_fitness = total / pop_size;
     }
 
     int getChromosomeIndexFromDist(float rand_val)
@@ -89,14 +96,15 @@ public:
     void setMutationProb(float prob) { mutation_prob = prob; }
     void setCrossoverProb(float prob) { cross_prob = prob; }
 
-    /*
-    GeneticAlgorithm(Crosser&& cross, Mutator&& mut, Evaluator&& ev) :
-        crosser(std::move(cross)), mutator(std::move(mut)), evaluator(std::move(ev)) {}
-    */
+    GeneticAlgorithm(ChromosomeCreator creator, Crosser cross, Mutator mut, Evaluator ev) :
+        creator(creator), crosser(cross), mutator(mut), evaluator(ev) {}
+
 
     void initPopulation(int size) {
         pop_size = size;
-        population = std::vector<Chromosome>(pop_size);
+        population = std::vector<Chromosome>(pop_size, creator());
+        for(auto& chrom : population)
+            creator(chrom); //random initialize chromosome
         evaluations.resize(pop_size);
         cum_dist.resize(pop_size);
     }

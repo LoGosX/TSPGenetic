@@ -2,17 +2,12 @@
 #include <array>
 #include "math_helpers.h"
 
-//minimalizacja prostej funkcji, rozdział 1.1 z książki jak dobrze pamiętam
+//maksymalizacja prostej funkcji, rozdział 1.1 z książki jak dobrze pamiętam
 
 template<int N>
 struct BinaryChrom
 {
     std::array<int, N> digits;
-    BinaryChrom() // chromosome should self-initialize
-    {
-        for(int& digit : digits)
-            digit = (randomFloat() > 0.5 ? 0 : 1);
-    }
 };
 
 struct BinaryEvaluator
@@ -68,3 +63,19 @@ struct BinaryCrosser
             std::swap(a.digits[i], b.digits[i]);
     }
 };
+
+struct BinaryChromosomeCreator
+{
+    template<int N>
+    BinaryChrom<N> operator()()
+    {
+        return BinaryChrom<N>();
+    }
+
+    template<int N>
+    void operator()(BinaryChrom<N>& chrom)
+    {
+        for(int& digit : chrom.digits)
+            digit = (randomFloat() > 0.5 ? 0 : 1);
+    }
+};  
