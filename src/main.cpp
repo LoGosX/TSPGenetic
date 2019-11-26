@@ -5,10 +5,12 @@
 #include <ctime>
 #include <string>
 #include "optimal_path.h"
+#include "preProcess.h"
 
 #include "GeneticAlgorithm.h"
 #include "ExampleOperators.h"
 #include "TSPOperators.h"
+#include "2opt.h"
 
 struct GridSearcher
 {
@@ -40,7 +42,8 @@ void test_tsp()
     ga.setMutationProb(0.001);
     ga.initPopulation(1000);
     ga.run(500);
-    std::cout << "Found by GA: " << evaluator.pathDist(ga.getBestChromosomeEver()) << std::endl;
+    auto best = ga.getBestChromosomeEver();
+    std::cout << "Found by GA: " << evaluator.pathDist(best) << std::endl;
     std::cout << "Optimal: " << best_path << std::endl;
     std::cout << "0 ";
     for(int x : ga.getBestChromosomeEver().path)
@@ -60,67 +63,32 @@ void tsp()
         cities[i].second = c;
     }
 
-    float mut_low = 0.0001;
-    float mut_high = 0.1;
-    int mut_res = 10;
-    GridSearcher mut(mut_low, mut_high, mut_res);
 
-    float cross_low = 0.001;
-    float cross_high = 0.25;
-    int cross_res = 10;
-
-    float pop_low = 100;
-    float pop_high = 1000;
-    int pop_res = 10;
-
-    TSPChromCreator creator(n);
+    TSPChromCreator creator(cities.size());
     TSPEvaluator evaluator(cities);
+
+    auto greedy = pathGreedy(cities);
+    std::vector<int> initial_chrom_path;
+    for(int i = 1; i < greedy.size(); i++)
+        initial_chrom_path.push_back(greedy[i] - 1);
+    
+    std::cout << greedy.front() << " " << greedy.back() << " " << greedy.size() << endl;
+
+    std::vector<TSPChrom> initial_chroms(500);
+    for(int i = 0; i < initial_chroms.size() / 10; i++)
+        initial_chroms[i].path = initial_chrom_path;
+    for(int i = initial_chroms.size() / 10; i < initial_chroms.size(); i++)
+        creator(initial_chroms[i]);
+
 
     GeneticAlgorithm<TSPChrom, TSPChromCreator, TSPCrosser, TSPMutator, TSPEvaluator>
                     ga(creator, TSPCrosser(), TSPMutator(), evaluator);
     ga.setCrossoverProb(0.1255);
-    ga.setMutationProb(0.00006);
-    ga.initPopulation(730);
+    ga.setMutationProb(0.005);
+    ga.initPopulation(initial_chroms);
     ga.run(10000);
-    std::cout << evaluator.pathDist(ga.getBestChromosomeEver()) << std::endl;
-
-    float best_mu, best_cross, best_eval = 1000000;
-    int best_pop;
-    std::vector<int> best_path;
-    for (; mut.step < mut.steps && false;)
-    {
-        float mut_chnc = mut.next();
-        GridSearcher cros(cross_low, cross_high, cross_res);
-        for (; cros.step < cros.steps;)
-        {
-            float cross_chnc = cros.next();
-            
-            GridSearcher pop(pop_low, pop_high, pop_res);
-            for (; pop.step < pop.steps;)
-            {
-                int pop_size = (pop.next() + .5F);
-
-                GeneticAlgorithm<TSPChrom, TSPChromCreator, TSPCrosser, TSPMutator, TSPEvaluator>
-                    ga(creator, TSPCrosser(), TSPMutator(), evaluator);
-                ga.setCrossoverProb(cross_chnc);
-                ga.setMutationProb(mut_chnc);
-                ga.initPopulation(pop_size);
-                ga.run(1000);
-                auto b = ga.getBestChromosomeEver();
-                float val = evaluator.pathDist(b);
-                std::cout << "Mut: " << mut_chnc << " Cross: " << cross_chnc << " Pop: " << pop_size << " Path length: " << val << std::endl;
-                if (val < best_eval)
-                {
-                    best_eval = val;
-                    best_pop = pop_size;
-                    best_mu = mut_chnc;
-                    best_cross = cross_chnc;
-                    best_path = b.path;
-                }
-            }
-        }
-    }
-    std::cout << "Best path: " << best_eval << "\nMut: " << best_mu << "\nCross: " << best_cross << "\nPop: " << best_pop << std::endl;
+    auto best = ga.getBestChromosomeEver();
+    std::cout << evaluator.pathDist(best) << std::endl;
 }
 
 void example()
@@ -150,7 +118,14 @@ int main(int argc, const char *argv)
     float mut_chnc = std::stoi(argv[3]);
     int epochs = std::stoi(argv[4]);
     */
+    //tsp();
     //test_tsp();
-    tsp();
+    /* testing 2opt:
+    std::vector<int> path = {0, 1, 2, 3};
+    std::vector<std::pair<int,int>> cities = {{0, 0}, {5, 1}, {0, 1}, {5, 0}};
+
+    std::vector<int> res = path2opt(path, cities);
+    cout << res[0] << res[1] << res[2] << res[3];
+    */
     return 0;
 }

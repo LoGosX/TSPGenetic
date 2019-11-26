@@ -4,13 +4,6 @@
 #include <vector>
 #include "math_helpers.h"
 
-float dist(std::pair<int,int>& a, std::pair<int,int>& b)
-{
-    float x = a.first - b.first;
-    float y = a.second - b.second;
-    return std::sqrtf(x * x + y * y);
-}
-
 std::vector<std::pair<int,int>> randomPath(int size)
 {
     std::vector<std::pair<int,int>> v(size);
