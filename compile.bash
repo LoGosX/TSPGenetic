@@ -6,6 +6,8 @@ function log_and_exit ()
     exit 1
 }
 
+mkdir -p graphs
+
 mkdir -p build
 cd build
 cmake .. || log_and_exit
