@@ -36,8 +36,8 @@ void test_tsp()
     TSPChromCreator creator(data.size());
     TSPEvaluator evaluator(data);
     
-    GeneticAlgorithm<TSPChrom, TSPChromCreator, TSPCrosser, TSPMutator, TSPEvaluator>
-                    ga(creator, TSPCrosser(), TSPMutator(), evaluator);
+    GeneticAlgorithm<TSPChrom, TSPChromCreator, TSPCrosser, TSPMutator, TSPEvaluator, TSPLocalSearch>
+                    ga(creator, TSPCrosser(), TSPMutator(), evaluator, TSPLocalSearch(data));
     ga.setCrossoverProb(0.1255);
     ga.setMutationProb(0.001);
     ga.initPopulation(1000);
@@ -94,8 +94,8 @@ void tsp_grid_search()
 
                 TSPChromCreator creator(n);
                 TSPEvaluator evaluator(cities);
-                GeneticAlgorithm<TSPChrom, TSPChromCreator, TSPCrosser, TSPMutator, TSPEvaluator>
-                    ga(creator, TSPCrosser(), TSPMutator(), evaluator);
+                GeneticAlgorithm<TSPChrom, TSPChromCreator, TSPCrosser, TSPMutator, TSPEvaluator, TSPLocalSearch>
+                    ga(creator, TSPCrosser(), TSPMutator(), evaluator, TSPLocalSearch(cities));
                 ga.setCrossoverProb(cross_chnc);
                 ga.setMutationProb(mut_chnc);
                 ga.initPopulation(pop_size);
@@ -117,47 +117,60 @@ void tsp_grid_search()
     std::cout << "Best path: " << best_eval << "\nMut: " << best_mu << "\nCross: " << best_cross << "\nPop: " << best_pop << std::endl;
 }
 
-void tsp(int epochs, int pop_size, float cross_chnc, float mut_chnc, float elitism_percent, bool save)
-{
-    int n;
-    std::cin >> n;
-    std::vector<std::pair<int, int>> cities(n);
-    for (int i = 0, a, b, c; i < n; i++)
-    {
-        std::cin >> a >> b >> c;
-        cities[i].first = b;
-        cities[i].second = c;
-    }
+void writeResults(std::string path, const TSPChrom& best, const TSPEvaluator& eval) {
+    path = path.substr(0, path.find('.')) + ".results";
+    std::ofstream file(path, ios::app);
+    if(file.good()) {
+        file << eval.pathDist(best) << "\n1 ";
+        for(int i : best.path)
+            file << i + 1 << ' ';
+        file << '\n';
+        file.close();
+    }else
+        std::cout << "Could not open " << path << " to save results." << std::endl;
+}
 
-    TSPChromCreator creator(n);
+std::vector<std::pair<int,int>> load_data(std::string path) {
+    std::fstream file(path);
+    if(file.good()) {
+        int n;
+        file >> n;
+        std::vector<std::pair<int, int>> cities(n);
+        for (int i = 0, a, b, c; i < n; i++)
+        {
+            file >> a >> b >> c;
+            cities[i].first = b;
+            cities[i].second = c;
+        }
+        return cities;
+    }else
+    {
+        std::cerr << "Could not open " << path << " and load data\n";
+        exit(1);
+    }    
+}
+
+void tsp(std::string path, int epochs, int pop_size, float cross_chnc, float mut_chnc, float elitism_percent, bool save)
+{    
+    auto cities = load_data(path);
+    TSPChromCreator creator(cities.size());
     TSPEvaluator evaluator(cities);
 
-    GeneticAlgorithm<TSPChrom, TSPChromCreator, TSPCrosser, TSPMutator, TSPEvaluator>
-                    ga(creator, TSPCrosser(), TSPMutator(), evaluator);
+    GeneticAlgorithm<TSPChrom, TSPChromCreator, TSPCrosser, TSPMutator, TSPEvaluator, TSPLocalSearch>
+                    ga(creator, TSPCrosser(), TSPMutator(), evaluator, TSPLocalSearch(cities));
     ga.setCrossoverProb(cross_chnc);
     ga.setMutationProb(mut_chnc);
     ga.setElitismPercent(elitism_percent);
     ga.initPopulation(pop_size);
+    ga.setFilePrefix(path.substr(0, path.find('.')));
     ga.run(epochs, save);
-    std::cout << evaluator.pathDist(ga.getBestChromosomeEver()) << std::endl;
-}
-
-void example()
-{
-    //PÓKI CO NIE DZIAŁA
-    /*
-    //przykład z rozdziału 1.1
-    //BinaryChrom<22> liczba jest reprezentowana na 22 bitach (jak w przykładzie w książce)
-    GeneticAlgorithm<BinaryChrom<22>, BinaryChromosomeCreator, BinaryCrosser, BinaryMutator, BinaryEvaluator> ga;
-    ga.initPopulation(50);
-    ga.setCrossoverProb(0.25F);
-    ga.setMutationProb(0.1); //to nie jest dokładnie to samo co w książce ale co tam
-    ga.run(150);
-    BinaryEvaluator ev;
-    BinaryChrom chr = ga.getBestChromosomeEver();
-    std::cout << "Maksymalna wartość funkcji f(x) = x * sin(10*pi*x) + 1.0 po 150 iteracjach wynosi:\n"
-        "f(" << ev.getX(chr) << ") = " << ev(chr) << '\n';
-    */
+    auto best = ga.getBestChromosomeEver();
+    std::cout << evaluator.pathDist(best) << std::endl << "1 ";
+    for(int i : best.path)
+        std::cout << i + 1 << ' ';
+    std::cout << std::endl;
+    
+    writeResults(path, best, evaluator);
 }
 
 int main(int argc, const char * argv[])
@@ -169,15 +182,16 @@ int main(int argc, const char * argv[])
     float mut_chnc = 0.01;
     float elitism_percent = 0.1;
     bool save = false;
+    std::string file = "default";
     if(argc >= 7){
-        pop_size = std::atoi(argv[1]);
-        cross_chnc = std::atof(argv[2]);
-        mut_chnc = std::atof(argv[3]);
-        epochs = std::atoi(argv[4]);
-        elitism_percent = std::atof(argv[5]);
-        save = std::atoi(argv[6]);
+        file = std::string(argv[1]);
+        pop_size = std::atoi(argv[2]);
+        cross_chnc = std::atof(argv[3]);
+        mut_chnc = std::atof(argv[4]);
+        epochs = std::atoi(argv[5]);
+        elitism_percent = std::atof(argv[6]);
+        save = std::atoi(argv[7]);
     }
-    //test_tsp();
-    tsp(epochs, pop_size, cross_chnc, mut_chnc, elitism_percent, save);
+    tsp(file, epochs, pop_size, cross_chnc, mut_chnc, elitism_percent, save);
     return 0;
 }

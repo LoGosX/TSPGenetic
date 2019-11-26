@@ -8,7 +8,7 @@
 //ZBIGNIEW MICHALEWICZ ALG GEN _ STR DAN = PROG EWOL ~STRONA 241+
 
 //później rozdzielę na .h i .cpp
-template <class Chromosome, class ChromosomeCreator, class Crosser, class Mutator, class Evaluator>
+template <class Chromosome, class ChromosomeCreator, class Crosser, class Mutator, class Evaluator, class LocalSearch>
 class GeneticAlgorithm
 {
     /*
@@ -22,6 +22,7 @@ class GeneticAlgorithm
     Mutator mutator;
     Evaluator evaluator;
     ChromosomeCreator creator;
+    LocalSearch local;
 
     std::vector<Chromosome> population;
     std::vector<float> evaluations;
@@ -99,7 +100,7 @@ class GeneticAlgorithm
         std::vector<Chromosome> next_pop(pop_size);
         for (auto &chrom : next_pop)
             chrom = population[getChromosomeIndexFromDist(randomFloat())];
-        
+
         int t = pop_size * elitism_percent;
         for (int i = 0; i < t; i++)
             next_pop[i] = population[cum_dist[pop_size - i - 1].second];
@@ -128,19 +129,20 @@ class GeneticAlgorithm
 
     void dumpStats()
     {
-        stats_file 
-            << "AvgFitness=" << curr_avg_fitness 
-            << " StdDev=" << population_std_devation 
-            << " GenBestFitness=" << pop_highest_eval 
-            << " GenLowestFitness=" << pop_lowest_eval 
+        stats_file
+            << "AvgFitness=" << curr_avg_fitness
+            << " StdDev=" << population_std_devation
+            << " GenBestFitness=" << pop_highest_eval
+            << " GenLowestFitness=" << pop_lowest_eval
             << " BestFitness=" << best_evaluation << '\n';
     }
 
+    std::string file_prefix = "stats";
     void openFile(int epochs)
     {
         stats_file.open(
-            std::string("plots/stats") +
-                    std::string("_epochs=") +
+            std::string("plots/") + file_prefix +
+                std::string("_epochs=") +
                 std::to_string(epochs) +
                 std::string("_elitism_percent=") + std::to_string(elitism_percent) +
                 std::string("_pop=") + std::to_string(pop_size) +
@@ -158,7 +160,8 @@ public:
     void setCrossoverProb(float prob) { cross_prob = prob; }
     void setElitismPercent(float p) { elitism_percent = p; }
 
-    GeneticAlgorithm(ChromosomeCreator creator, Crosser cross, Mutator mut, Evaluator ev) : creator(creator), crosser(cross), mutator(mut), evaluator(ev) {}
+    GeneticAlgorithm(ChromosomeCreator creator, Crosser cross, Mutator mut, Evaluator ev, LocalSearch loc)
+        : creator(creator), crosser(cross), mutator(mut), evaluator(ev), local(loc) {}
 
     void initPopulation(int size)
     {
@@ -179,6 +182,10 @@ public:
     std::vector<Chromosome> getPopulation() const { return population; }
 
     Chromosome getBestChromosomeEver() const { return best_chrom_ever; }
+
+    void setFilePrefix(std::string prefix) {
+        file_prefix = prefix;
+    }
 
     void run(int epochs, bool save_stats = false, float epsi = 0.000003f)
     {
@@ -201,6 +208,11 @@ public:
             {
                 measureStatictics(false);
                 dumpStats();
+            }
+            if((i + 1) % 50 == 0 || true)
+            {
+                for(auto& chrom : population)
+                    local(chrom);
             }
         }
         if (file_good)

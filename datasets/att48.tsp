@@ -46,6 +46,4 @@
 45 10 2676
 46 6807 2993
 47 5185 3258
-48 3023 1942    
-att48.tsp - 48 capitals of the US (Padberg/Rinaldi) //ta linijka jest ok
-att48 : 10628 //najlepsze rozwiazanie
+48 3023 1942

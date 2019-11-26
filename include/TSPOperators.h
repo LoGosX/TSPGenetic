@@ -124,7 +124,7 @@ struct TSPEvaluator
     std::vector<std::pair<int,int>> cities;
     TSPEvaluator(std::vector<std::pair<int,int>>& cities) : cities(cities) {}
 
-    float pathDist(TSPChrom& chrom)
+    float pathDist(const TSPChrom& chrom) const
     {
         float dist = 0;
         dist += sqrtf(dist2(cities[0], cities[chrom.path[0]]));
@@ -135,7 +135,7 @@ struct TSPEvaluator
     }
 
 
-    float operator()(TSPChrom& chrom)
+    float operator()(TSPChrom& chrom) const
     {
         #if DEBUG
         std::cout << "TSPMutator::operator(TSPChrom&)" << std::endl;
