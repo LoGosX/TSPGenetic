@@ -1,0 +1,11 @@
+AvgFitness=6.42632e-06 StdDev=5.1194e-07 GenBestFitness=7.95702e-06 GenLowestFitness=5.47888e-06 BestFitness=7.95702e-06
+AvgFitness=6.59881e-06 StdDev=6.35871e-07 GenBestFitness=9.03529e-06 GenLowestFitness=5.20183e-06 BestFitness=9.03529e-06
+AvgFitness=6.59274e-06 StdDev=6.6865e-07 GenBestFitness=9.37159e-06 GenLowestFitness=5.22669e-06 BestFitness=9.37159e-06
+AvgFitness=6.78724e-06 StdDev=8.00933e-07 GenBestFitness=9.49392e-06 GenLowestFitness=5.5099e-06 BestFitness=9.49392e-06
+AvgFitness=6.78706e-06 StdDev=6.68185e-07 GenBestFitness=9.25806e-06 GenLowestFitness=5.67395e-06 BestFitness=9.49392e-06
+AvgFitness=6.80332e-06 StdDev=7.87855e-07 GenBestFitness=8.98598e-06 GenLowestFitness=5.65433e-06 BestFitness=9.49392e-06
+AvgFitness=6.91763e-06 StdDev=7.25709e-07 GenBestFitness=8.85022e-06 GenLowestFitness=5.69237e-06 BestFitness=9.49392e-06
+AvgFitness=7.10523e-06 StdDev=7.47471e-07 GenBestFitness=8.84002e-06 GenLowestFitness=5.6002e-06 BestFitness=9.49392e-06
+AvgFitness=7.06209e-06 StdDev=7.20904e-07 GenBestFitness=8.86198e-06 GenLowestFitness=5.45238e-06 BestFitness=9.49392e-06
+AvgFitness=7.18053e-06 StdDev=7.33597e-07 GenBestFitness=8.86198e-06 GenLowestFitness=5.81782e-06 BestFitness=9.49392e-06
+AvgFitness=7.24915e-06 StdDev=7.12009e-07 GenBestFitness=9.15241e-06 GenLowestFitness=5.92888e-06 BestFitness=9.49392e-06

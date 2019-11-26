@@ -8,7 +8,7 @@
 //ZBIGNIEW MICHALEWICZ ALG GEN _ STR DAN = PROG EWOL ~STRONA 241+
 
 //później rozdzielę na .h i .cpp
-template<class Chromosome, class ChromosomeCreator, class Crosser, class Mutator, class Evaluator>
+template <class Chromosome, class ChromosomeCreator, class Crosser, class Mutator, class Evaluator>
 class GeneticAlgorithm
 {
     /*
@@ -26,8 +26,8 @@ class GeneticAlgorithm
     std::vector<Chromosome> population;
     std::vector<float> evaluations;
     std::vector<std::pair<float, int>> cum_dist; //used in parent selection (roulette method)
-    Chromosome best_chrom_ever; //best chromosome from all generations
-    float best_evaluation { -10000000000.F }; // -INF
+    Chromosome best_chrom_ever;                  //best chromosome from all generations
+    float best_evaluation{-10000000000.F};       // -INF
     int pop_size;
     float cross_prob;
     float mutation_prob;
@@ -37,16 +37,17 @@ class GeneticAlgorithm
     float population_std_devation;
     float pop_highest_eval;
     float pop_lowest_eval;
+    float elitism_percent = 0.1;
 
     std::ofstream stats_file;
-    bool file_good {false};
+    bool file_good{false};
 
-    void measureStatictics(bool measure_fitness=false)
+    void measureStatictics(bool measure_fitness = false)
     {
-        if(!measure_fitness)
+        if (!measure_fitness)
             measurePopulationFitness();
         population_variance = 0;
-        for(int i = 0; i < pop_size; i++)
+        for (int i = 0; i < pop_size; i++)
             population_variance += (evaluations[i] - curr_avg_fitness) * (evaluations[i] - curr_avg_fitness);
         population_variance /= pop_size;
         population_std_devation = sqrtf(population_variance);
@@ -57,15 +58,15 @@ class GeneticAlgorithm
         total_population_fitness = 0;
         pop_lowest_eval = 10000000000;
         pop_highest_eval = -1;
-        for(int i = 0; i < pop_size; i++)
+        for (int i = 0; i < pop_size; i++)
         {
             evaluations[i] = evaluator(population[i]);
             total_population_fitness += evaluations[i];
-            if(evaluations[i] > pop_highest_eval)
+            if (evaluations[i] > pop_highest_eval)
                 pop_highest_eval = evaluations[i];
-            if(evaluations[i] < pop_lowest_eval)
+            if (evaluations[i] < pop_lowest_eval)
                 pop_lowest_eval = evaluations[i];
-            if(evaluations[i] > best_evaluation)
+            if (evaluations[i] > best_evaluation)
             {
                 best_chrom_ever = population[i];
                 best_evaluation = evaluations[i];
@@ -77,45 +78,39 @@ class GeneticAlgorithm
     void fillCumDist()
     {
         measurePopulationFitness();
-        for(int i = 0; i < pop_size; i++)
+        for (int i = 0; i < pop_size; i++)
             cum_dist[i] = {evaluations[i] / total_population_fitness, i};
         std::sort(begin(cum_dist), end(cum_dist));
-        for(int i = 1; i < pop_size; i++)
-            cum_dist[i].first += cum_dist[i-1].first;
+        for (int i = 1; i < pop_size; i++)
+            cum_dist[i].first += cum_dist[i - 1].first;
     }
 
     int getChromosomeIndexFromDist(float rand_val)
     {
-        auto it = std::upper_bound(begin(cum_dist), end(cum_dist), std::pair<float,int>(randomFloat(), -1));
-        if(it == end(cum_dist))
+        auto it = std::upper_bound(begin(cum_dist), end(cum_dist), std::pair<float, int>(randomFloat(), -1));
+        if (it == end(cum_dist))
             return cum_dist.back().second;
         return it->second;
     }
 
-    void chooseNextPopulation(bool roulette = true)
+    void chooseNextPopulation()
     {
-        if(roulette){
-            fillCumDist();
-            std::vector<Chromosome> next_pop(pop_size);
-            for(auto& chrom : next_pop)
-                chrom = population[getChromosomeIndexFromDist(randomFloat())];
-            population = next_pop;
-        }else //elitism
-        {
-            float best_percent = 0.1f;
-            measurePopulationFitness();
-            std::vector<std::pair<float,int>> x;
-            for(int i = 0; i < pop_size; i++)
-                x.emplace_back(evaluations[i], i);
-            std::sort(begin(x), end(x));
-        }
+        fillCumDist();
+        std::vector<Chromosome> next_pop(pop_size);
+        for (auto &chrom : next_pop)
+            chrom = population[getChromosomeIndexFromDist(randomFloat())];
+        
+        int t = pop_size * elitism_percent;
+        for (int i = 0; i < t; i++)
+            next_pop[i] = population[cum_dist[pop_size - i - 1].second];
+        population = next_pop;
     }
 
     void crossover()
     {
-        for(int i = 0; i < pop_size; i++)
+        for (int i = pop_size * elitism_percent; i < pop_size; i++)
         {
-            if(randomFloat() < cross_prob)
+            if (randomFloat() < cross_prob)
             {
                 int chrom_a = randomInt(0, pop_size);
                 int chrom_b = randomInt(0, pop_size);
@@ -126,9 +121,9 @@ class GeneticAlgorithm
 
     void mutate()
     {
-        for(auto& chrom : population)
-            if(randomFloat() < mutation_prob)
-                mutator(chrom);
+        for (int i = pop_size * elitism_percent; i < pop_size; i++)
+            if (randomFloat() < mutation_prob)
+                mutator(population[i]);
     }
 
     void dumpStats()
@@ -136,31 +131,41 @@ class GeneticAlgorithm
         stats_file << "AvgFitness=" << curr_avg_fitness << " StdDev=" << population_std_devation << " GenBestFitness=" << pop_highest_eval << " GenLowestFitness=" << pop_lowest_eval << " BestFitness=" << best_evaluation << '\n';
     }
 
-public:
-
-    void setOutFile(std::string path) {
-        file_good = true;
-        stats_file.open(std::string("stats_pop=") + std::to_string(pop_size) + std::string("_mut=") + std::to_string(mutation_prob) + std::string("_cross=") + std::to_string(cross_prob) + std::string(".txt"), std::ios::trunc);
+    void openFile(int epochs)
+    {
+        stats_file.open(
+            std::string("plots/stats") +
+                    std::string("_epochs=") +
+                std::to_string(epochs) +
+                std::string("_elitism_percent=") + std::to_string(elitism_percent) +
+                std::string("_pop=") + std::to_string(pop_size) +
+                std::string("_mut=") + std::to_string(mutation_prob) +
+                std::string("_cross=") + std::to_string(cross_prob) +
+                std::string(".txt"),
+            std::ios::trunc);
+        file_good = stats_file.good();
     }
 
+public:
     GeneticAlgorithm() = default;
-    
+
     void setMutationProb(float prob) { mutation_prob = prob; }
     void setCrossoverProb(float prob) { cross_prob = prob; }
+    void setElitismPercent(float p) { elitism_percent = p; }
+    
+    GeneticAlgorithm(ChromosomeCreator creator, Crosser cross, Mutator mut, Evaluator ev) : creator(creator), crosser(cross), mutator(mut), evaluator(ev) {}
 
-    GeneticAlgorithm(ChromosomeCreator creator, Crosser cross, Mutator mut, Evaluator ev) :
-        creator(creator), crosser(cross), mutator(mut), evaluator(ev) {}
-
-
-    void initPopulation(int size) {
+    void initPopulation(int size)
+    {
         pop_size = size;
         population = std::vector<Chromosome>(pop_size, creator());
-        for(auto& chrom : population)
+        for (auto &chrom : population)
             creator(chrom); //random initialize chromosome
         evaluations.resize(pop_size);
         cum_dist.resize(pop_size);
     }
-    void initPopulation(const std::vector<Chromosome>& pop) {
+    void initPopulation(const std::vector<Chromosome> &pop)
+    {
         pop_size = pop.size();
         population = pop;
         evaluations.resize(pop_size);
@@ -170,26 +175,30 @@ public:
 
     Chromosome getBestChromosomeEver() const { return best_chrom_ever; }
 
-    void run(int epochs, float epsi = 0.000003f)
+    void run(int epochs, bool save_stats = false, float epsi = 0.000003f)
     {
-        if(file_good)
+        if (save_stats)
         {
-            measureStatictics();
-            dumpStats();
+            openFile(epochs);
+            if (file_good)
+            {
+                measureStatictics();
+                dumpStats();
+            }
         }
-        for(int i = 0; i < epochs /* && poprawa wieksza niz epsilon (np przez ostatnie 5 iteracji) */; i++)
+        for (int i = 0; i < epochs /* && poprawa wieksza niz epsilon (np przez ostatnie 5 iteracji) */; i++)
         {
-            
+
             chooseNextPopulation();
             crossover();
             mutate();
-            if(file_good)
+            if (file_good)
             {
                 measureStatictics(false);
                 dumpStats();
             }
         }
-        if(file_good)
+        if (file_good)
             stats_file.close();
     }
 };

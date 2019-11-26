@@ -8,7 +8,7 @@ float dist(std::pair<int,int>& a, std::pair<int,int>& b)
 {
     float x = a.first - b.first;
     float y = a.second - b.second;
-    return std::sqrtf(x * x + y * y);
+    return sqrtf(x * x + y * y);
 }
 
 std::vector<std::pair<int,int>> randomPath(int size)

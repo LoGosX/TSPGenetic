@@ -47,8 +47,7 @@ void test_tsp()
         std::cout << x << ' ';
 }
 
-
-void tsp()
+void tsp_grid_search()
 {
     int n;
     std::cin >> n;
@@ -75,15 +74,6 @@ void tsp()
 
     TSPChromCreator creator(n);
     TSPEvaluator evaluator(cities);
-
-    GeneticAlgorithm<TSPChrom, TSPChromCreator, TSPCrosser, TSPMutator, TSPEvaluator>
-                    ga(creator, TSPCrosser(), TSPMutator(), evaluator);
-    ga.setCrossoverProb(0.01);
-    ga.setMutationProb(0.01);
-    ga.initPopulation(1000);
-    ga.setOutFile("stats.txt");
-    ga.run(10000);
-    std::cout << evaluator.pathDist(ga.getBestChromosomeEver()) << std::endl;
 
     float best_mu, best_cross, best_eval = 1000000;
     int best_pop;
@@ -124,12 +114,37 @@ void tsp()
     std::cout << "Best path: " << best_eval << "\nMut: " << best_mu << "\nCross: " << best_cross << "\nPop: " << best_pop << std::endl;
 }
 
+void tsp()
+{
+    int n;
+    std::cin >> n;
+    std::vector<std::pair<int, int>> cities(n);
+    for (int i = 0, a, b, c; i < n; i++)
+    {
+        std::cin >> a >> b >> c;
+        cities[i].first = b;
+        cities[i].second = c;
+    }
+
+    TSPChromCreator creator(n);
+    TSPEvaluator evaluator(cities);
+
+    GeneticAlgorithm<TSPChrom, TSPChromCreator, TSPCrosser, TSPMutator, TSPEvaluator>
+                    ga(creator, TSPCrosser(), TSPMutator(), evaluator);
+    ga.setCrossoverProb(0.7);
+    ga.setMutationProb(0.1);
+    ga.setElitismPercent(0.1);
+    ga.initPopulation(1000);
+    ga.run(1000, true);
+    std::cout << evaluator.pathDist(ga.getBestChromosomeEver()) << std::endl;
+}
+
 void example()
 {
     //PÓKI CO NIE DZIAŁA
     /*
     //przykład z rozdziału 1.1
-    //BinaryChrom<10> liczba jest reprezentowana na 22 bitach (jak w przykładzie w książce)
+    //BinaryChrom<22> liczba jest reprezentowana na 22 bitach (jak w przykładzie w książce)
     GeneticAlgorithm<BinaryChrom<22>, BinaryChromosomeCreator, BinaryCrosser, BinaryMutator, BinaryEvaluator> ga;
     ga.initPopulation(50);
     ga.setCrossoverProb(0.25F);
