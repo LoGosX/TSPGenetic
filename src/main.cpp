@@ -114,7 +114,7 @@ void tsp_grid_search()
     std::cout << "Best path: " << best_eval << "\nMut: " << best_mu << "\nCross: " << best_cross << "\nPop: " << best_pop << std::endl;
 }
 
-void tsp()
+void tsp(int epochs, int pop_size, float cross_chnc, float mut_chnc, float elitism_percent, bool save)
 {
     int n;
     std::cin >> n;
@@ -131,11 +131,11 @@ void tsp()
 
     GeneticAlgorithm<TSPChrom, TSPChromCreator, TSPCrosser, TSPMutator, TSPEvaluator>
                     ga(creator, TSPCrosser(), TSPMutator(), evaluator);
-    ga.setCrossoverProb(0.7);
-    ga.setMutationProb(0.1);
-    ga.setElitismPercent(0.1);
-    ga.initPopulation(1000);
-    ga.run(1000, true);
+    ga.setCrossoverProb(cross_chnc);
+    ga.setMutationProb(mut_chnc);
+    ga.setElitismPercent(elitism_percent);
+    ga.initPopulation(pop_size);
+    ga.run(epochs, save);
     std::cout << evaluator.pathDist(ga.getBestChromosomeEver()) << std::endl;
 }
 
@@ -157,16 +157,24 @@ void example()
     */
 }
 
-int main(int argc, const char *argv)
+int main(int argc, const char * argv[])
 {
     srand(time(0));
-    /*
-    int pop_size = std::stoi(argv[1]);
-    float cross_chnc = std::stoi(argv[2]);
-    float mut_chnc = std::stoi(argv[3]);
-    int epochs = std::stoi(argv[4]);
-    */
+    int pop_size = 100;
+    int epochs = 500;
+    float cross_chnc = 0.01;
+    float mut_chnc = 0.01;
+    float elitism_percent = 0.1;
+    bool save = false;
+    if(argc >= 7){
+        pop_size = std::atoi(argv[1]);
+        cross_chnc = std::atof(argv[2]);
+        mut_chnc = std::atof(argv[3]);
+        epochs = std::atoi(argv[4]);
+        elitism_percent = std::atof(argv[5]);
+        save = std::atoi(argv[6]);
+    }
     //test_tsp();
-    tsp();
+    tsp(epochs, pop_size, cross_chnc, mut_chnc, elitism_percent, save);
     return 0;
 }
