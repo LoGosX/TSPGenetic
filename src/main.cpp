@@ -150,7 +150,7 @@ std::vector<std::pair<int,int>> load_data(std::string path) {
     }    
 }
 
-void tsp(std::string path, int epochs, int pop_size, float cross_chnc, float mut_chnc, float elitism_percent, bool save)
+void tsp(std::string path, int epochs, int pop_size, float cross_chnc, float mut_chnc, float elitism_percent, int local_search_rate, bool save)
 {    
     auto cities = load_data(path);
     TSPChromCreator creator(cities.size());
@@ -162,6 +162,7 @@ void tsp(std::string path, int epochs, int pop_size, float cross_chnc, float mut
     ga.setMutationProb(mut_chnc);
     ga.setElitismPercent(elitism_percent);
     ga.initPopulation(pop_size);
+    ga.setLocalSearchRate(local_search_rate);
     ga.setFilePrefix(path.substr(path.find('/')+1, path.find('.')));
     ga.run(epochs, save);
     auto best = ga.getBestChromosomeEver();
@@ -181,6 +182,7 @@ int main(int argc, const char * argv[])
     float cross_chnc = 0.01;
     float mut_chnc = 0.01;
     float elitism_percent = 0.1;
+    int local_search_rate = 100;
     bool save = false;
     std::string file = "default";
     bool help = false;
@@ -195,7 +197,7 @@ int main(int argc, const char * argv[])
     if(help || argc < 7)
     {
         std::cerr << "\nHow to run:\n"
-                << "./OKGen <path_to_dataset> <number_of_generations> <population_size> <crossover_chance (0,1)> <mutation_chance (0,1)> <elitism_percent (0,1)> <save results? 0 - no, 1 - yes>\n";
+                << "./OKGen <path_to_dataset> <number_of_generations> <population_size> <crossover_chance (0,1)> <mutation_chance (0,1)> <elitism_percent (0,1)> <local_search_rate> <save results? 0 - no, 1 - yes>\n";
             return 0;
     }
 
@@ -206,8 +208,9 @@ int main(int argc, const char * argv[])
         cross_chnc = std::atof(argv[4]);
         mut_chnc = std::atof(argv[5]);
         elitism_percent = std::atof(argv[6]);
-        save = std::atoi(argv[7]);
+        local_search_rate = std::atoi(argv[7]);
+        save = std::atoi(argv[8]);
     }
-    tsp(file, epochs, pop_size, cross_chnc, mut_chnc, elitism_percent, save);
+    tsp(file, epochs, pop_size, cross_chnc, mut_chnc, elitism_percent, local_search_rate, save);
     return 0;
 }

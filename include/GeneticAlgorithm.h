@@ -39,6 +39,7 @@ class GeneticAlgorithm
     float pop_highest_eval;
     float pop_lowest_eval;
     float elitism_percent = 0.1;
+    int local_search_rate = 100;
 
     std::ofstream stats_file;
     bool file_good{false};
@@ -144,9 +145,10 @@ class GeneticAlgorithm
             std::string("graphs/") + file_prefix +
             std::string("_epochs=") + std::to_string(epochs) +
             std::string("_pop=") + std::to_string(pop_size) +
-            std::string("_mut=") + std::to_string(mutation_prob) +
             std::string("_cross=") + std::to_string(cross_prob) +
+            std::string("_mut=") + std::to_string(mutation_prob) +
             std::string("_elitism_percent=") + std::to_string(elitism_percent) +
+            std::string("local_search_rate=") + std::to_string(local_search_rate) +
             std::string(".txt");
         stats_file.open(path, std::ios::trunc | std::fstream::in | std::fstream::out);
         file_good = stats_file.good();
@@ -158,6 +160,7 @@ public:
     void setMutationProb(float prob) { mutation_prob = prob; }
     void setCrossoverProb(float prob) { cross_prob = prob; }
     void setElitismPercent(float p) { elitism_percent = p; }
+    void setLocalSearchRate(int rate) { local_search_rate = rate; }
 
     GeneticAlgorithm(ChromosomeCreator creator, Crosser cross, Mutator mut, Evaluator ev, LocalSearch loc)
         : creator(creator), crosser(cross), mutator(mut), evaluator(ev), local(loc) {}
@@ -209,7 +212,7 @@ public:
                 measureStatictics(false);
                 dumpStats();
             }
-            if ((i + 1) % 50 == 0)
+            if (i % local_search_rate == 0)
             {
                 for (auto &chrom : population)
                     local(chrom);
