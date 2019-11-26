@@ -201,10 +201,10 @@ int main(int argc, const char * argv[])
 
     if(argc >= 7){
         file = std::string(argv[1]);
-        pop_size = std::atoi(argv[2]);
-        cross_chnc = std::atof(argv[3]);
-        mut_chnc = std::atof(argv[4]);
-        epochs = std::atoi(argv[5]);
+        epochs = std::atoi(argv[2]);
+        pop_size = std::atoi(argv[3]);
+        cross_chnc = std::atof(argv[4]);
+        mut_chnc = std::atof(argv[5]);
         elitism_percent = std::atof(argv[6]);
         save = std::atoi(argv[7]);
     }
