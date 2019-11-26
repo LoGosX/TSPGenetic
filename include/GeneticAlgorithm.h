@@ -128,7 +128,12 @@ class GeneticAlgorithm
 
     void dumpStats()
     {
-        stats_file << "AvgFitness=" << curr_avg_fitness << " StdDev=" << population_std_devation << " GenBestFitness=" << pop_highest_eval << " GenLowestFitness=" << pop_lowest_eval << " BestFitness=" << best_evaluation << '\n';
+        stats_file 
+            << "AvgFitness=" << curr_avg_fitness 
+            << " StdDev=" << population_std_devation 
+            << " GenBestFitness=" << pop_highest_eval 
+            << " GenLowestFitness=" << pop_lowest_eval 
+            << " BestFitness=" << best_evaluation << '\n';
     }
 
     void openFile(int epochs)
@@ -152,7 +157,7 @@ public:
     void setMutationProb(float prob) { mutation_prob = prob; }
     void setCrossoverProb(float prob) { cross_prob = prob; }
     void setElitismPercent(float p) { elitism_percent = p; }
-    
+
     GeneticAlgorithm(ChromosomeCreator creator, Crosser cross, Mutator mut, Evaluator ev) : creator(creator), crosser(cross), mutator(mut), evaluator(ev) {}
 
     void initPopulation(int size)

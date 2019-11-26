@@ -5,10 +5,12 @@
 #include <ctime>
 #include <string>
 #include "optimal_path.h"
+#include "preProcess.h"
 
 #include "GeneticAlgorithm.h"
 #include "ExampleOperators.h"
 #include "TSPOperators.h"
+#include "2opt.h"
 
 struct GridSearcher
 {
@@ -40,7 +42,8 @@ void test_tsp()
     ga.setMutationProb(0.001);
     ga.initPopulation(1000);
     ga.run(500);
-    std::cout << "Found by GA: " << evaluator.pathDist(ga.getBestChromosomeEver()) << std::endl;
+    auto best = ga.getBestChromosomeEver();
+    std::cout << "Found by GA: " << evaluator.pathDist(best) << std::endl;
     std::cout << "Optimal: " << best_path << std::endl;
     std::cout << "0 ";
     for(int x : ga.getBestChromosomeEver().path)
@@ -72,8 +75,6 @@ void tsp_grid_search()
     float pop_high = 5000;
     int pop_res = 10;
 
-    TSPChromCreator creator(n);
-    TSPEvaluator evaluator(cities);
 
     float best_mu, best_cross, best_eval = 1000000;
     int best_pop;
@@ -91,6 +92,8 @@ void tsp_grid_search()
             {
                 int pop_size = (pop.next() + .5F);
 
+                TSPChromCreator creator(n);
+                TSPEvaluator evaluator(cities);
                 GeneticAlgorithm<TSPChrom, TSPChromCreator, TSPCrosser, TSPMutator, TSPEvaluator>
                     ga(creator, TSPCrosser(), TSPMutator(), evaluator);
                 ga.setCrossoverProb(cross_chnc);

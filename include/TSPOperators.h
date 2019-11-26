@@ -134,9 +134,6 @@ struct TSPEvaluator
         return dist;
     }
 
-    int dist2(std::pair<int,int>& a, std::pair<int,int>& b) {
-        return (a.first - b.first) * (a.first - b.first) + (a.second - b.second) * (a.second - b.second);
-    }
 
     float operator()(TSPChrom& chrom)
     {
