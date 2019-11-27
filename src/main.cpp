@@ -175,12 +175,14 @@ void tsp(std::string path, int epochs, int pop_size, float cross_chnc, float mut
 }
 
 int main(int argc, const char * argv[])
-{
-    // bool result = validate2opt();
-    // if(!result){
-    //     std::cout << "2opt does not work!\n";
-    //     return 0;
-    // }
+{   
+    bool result = validate2opt();
+    if(!result){
+        std::cout << "2opt does not work!\n";
+        return 0;
+    }else{
+        std::cout << "2opt work?\n";
+    }
 
     int pop_size = 100;
     int epochs = 500;
@@ -216,6 +218,7 @@ int main(int argc, const char * argv[])
         local_search_rate = std::atoi(argv[7]);
         save = std::atoi(argv[8]);
     }
+
     tsp(file, epochs, pop_size, cross_chnc, mut_chnc, elitism_percent, local_search_rate, save);
     return 0;
 }

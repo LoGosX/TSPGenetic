@@ -21,25 +21,26 @@ struct TSPLocalSearch
 
     bool path2opt(std::vector<int> &path){
         bool improved = false;
-        for(int j=1; j<path.size(); j++)
+        for(int j=1; j<path.size()-1; j++)
         {
-            // if(betterResultForSwap(cities[0], cities[path[1]], cities[path[j]], cities[path[(j+1)%path.size()]])){
-            //     std::swap(path[j], path[1]);
-            //     int left = std::min(j, i+1);
-            //     int right = std::max(j, i+1);
-            //     std::reverse(path.begin() + left, path.begin() + right + 1);
-            //     improved = true;
-            // }
+            if(betterResultForSwap(cities[0], cities[path[0]], cities[path[j]], cities[path[(j+1)]])){
+                //std::swap(path[j], path[1]);
+                int left = 0;
+                int right = j;
+                std::reverse(path.begin() + left, path.begin() + right);
+                improved = true;
+            }
         }
+
         for(int i=0;i<path.size()-3; i++)
         {
-            for(int j=i+2; j<path.size()-1; j++)
+            for(int j=i+2; j<path.size(); j++)
             {
-                if(betterResultForSwap(cities[path[i]], cities[path[i+1]], cities[path[j]], cities[path[j+1]])){
+                if(betterResultForSwap(cities[path[i]], cities[path[i+1]], cities[path[j]], cities[path[(j+1)%path.size()]])){
                     //std::swap(path[j], path[i+1]);
-                    int left = std::min(j, i+1);
-                    int right = std::max(j, i+1);
-                    std::reverse(path.begin() + left, path.begin() + right + 1);
+                    int left = i+1;
+                    int right = j;
+                    std::reverse(path.begin() + left, path.begin() + right);
                     improved = true;
                 }
             }
