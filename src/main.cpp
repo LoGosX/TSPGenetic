@@ -30,7 +30,7 @@ struct GridSearcher
 
 void test_tsp()
 {
-    auto data = randomPath(11);
+    auto data = randomCities(11);
     float best_path = minimumPathLength(data);
 
     TSPChromCreator creator(data.size());
@@ -176,7 +176,12 @@ void tsp(std::string path, int epochs, int pop_size, float cross_chnc, float mut
 
 int main(int argc, const char * argv[])
 {
-    srand(time(0));
+    // bool result = validate2opt();
+    // if(!result){
+    //     std::cout << "2opt does not work!\n";
+    //     return 0;
+    // }
+
     int pop_size = 100;
     int epochs = 500;
     float cross_chnc = 0.01;

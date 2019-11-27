@@ -207,15 +207,15 @@ public:
             chooseNextPopulation();
             crossover();
             mutate();
+            if ((i + 1) % local_search_rate == 0)
+            {
+                for (auto& chrom : population)
+                    local(chrom);
+            }
             if (file_good)
             {
                 measureStatictics(false);
                 dumpStats();
-            }
-            if (i % local_search_rate == 0)
-            {
-                for (auto &chrom : population)
-                    local(chrom);
             }
         }
         if (file_good)

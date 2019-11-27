@@ -7,8 +7,8 @@
 struct TSPLocalSearch
 {
     bool betterResultForSwap(std::pair<int,int> a, std::pair<int,int> b, std::pair<int,int> c, std::pair<int,int> d){
-        int basic = dist2(a,b) + dist2(c,d);
-        int swapped = dist2(a,c) + dist2(b, d);
+        int basic = dist(a,b) + dist(c,d);
+        int swapped = dist(a,c) + dist(b, d);
 
         return swapped < basic;
     }
@@ -19,26 +19,58 @@ struct TSPLocalSearch
         this->cities = cities;
     }
 
-    void path2opt(std::vector<int> &path){
+    bool path2opt(std::vector<int> &path){
+        bool improved = false;
         for(int j=1; j<path.size(); j++)
         {
-            if(betterResultForSwap(cities[0], cities[path[1]], cities[path[j]], cities[path[(j+1)%path.size()]])){
-                std::swap(path[j], path[1]);
-            }
+            // if(betterResultForSwap(cities[0], cities[path[1]], cities[path[j]], cities[path[(j+1)%path.size()]])){
+            //     std::swap(path[j], path[1]);
+            //     int left = std::min(j, i+1);
+            //     int right = std::max(j, i+1);
+            //     std::reverse(path.begin() + left, path.begin() + right + 1);
+            //     improved = true;
+            // }
         }
         for(int i=0;i<path.size()-3; i++)
         {
-            for(int j=i+2; j<path.size(); j++)
+            for(int j=i+2; j<path.size()-1; j++)
             {
-                if(betterResultForSwap(cities[path[i]], cities[path[i+1]], cities[path[j]], cities[path[(j+1)%path.size()]])){
-                    std::swap(path[j], path[i+1]);
+                if(betterResultForSwap(cities[path[i]], cities[path[i+1]], cities[path[j]], cities[path[j+1]])){
+                    //std::swap(path[j], path[i+1]);
+                    int left = std::min(j, i+1);
+                    int right = std::max(j, i+1);
+                    std::reverse(path.begin() + left, path.begin() + right + 1);
+                    improved = true;
                 }
             }
         }
+        return improved;
     }
 
-    void operator()(TSPChrom& chrom)
+    bool operator()(TSPChrom& chrom)
     {
-        path2opt(chrom.path);
+        return path2opt(chrom.path);
     }
 };
+
+bool validate2opt()
+{
+    for(int i = 0; i < 1000; i++)
+    {
+        auto cities = randomCities(100);
+        TSPEvaluator eval(cities);
+        TSPLocalSearch s(cities);
+        TSPChrom chrom;
+        chrom.path = randomPath(cities.size());
+        float last_path_dist = 100000000000;
+        for(int i = 0; i < 10; i++) {
+            s(chrom);
+            float dist = eval.pathDist(chrom);
+            if(dist > last_path_dist)
+            {
+                return false;
+            }
+            last_path_dist = dist;
+        }
+    }
+}

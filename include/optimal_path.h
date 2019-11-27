@@ -4,14 +4,6 @@
 #include <vector>
 #include "math_helpers.h"
 
-std::vector<std::pair<int,int>> randomPath(int size)
-{
-    std::vector<std::pair<int,int>> v(size);
-    for(int i = 0; i < v.size(); i++)
-        v[i] = {randomInt(-10000, 10000), randomInt(-10000, 10000)};
-    return v;
-}
-
 float minimumPathLength(std::vector<std::pair<int,int>> x)
 {
     float best = 10000000;
