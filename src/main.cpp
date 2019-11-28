@@ -181,7 +181,7 @@ int main(int argc, const char * argv[])
         std::cout << "2opt does not work!\n";
         return 0;
     }else{
-        std::cout << "2opt work?\n";
+        std::cout << "2opt works?\n";
     }
 
     int pop_size = 100;
