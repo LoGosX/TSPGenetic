@@ -221,10 +221,15 @@ public:
             chooseNextPopulation();
             crossover();
             mutate();
-            if ((i + 1) % local_search_rate == 0)
+            if ((i + 1) % std::abs(local_search_rate) == 0)
             {
                 for (auto& chrom : population)
-                    local(chrom);
+                {
+                    if(local_search_rate < 0)
+                        while(local(chrom));
+                    else
+                        local(chrom);
+                }
             }
             if (file_good)
             {
