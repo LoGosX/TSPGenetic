@@ -42,6 +42,7 @@ class GeneticAlgorithm
     int local_search_rate = 100;
 
     std::ofstream stats_file;
+    std::ofstream iterations_file;
     bool file_good{false};
 
     void measureStatictics(bool measure_fitness = false)
@@ -142,7 +143,7 @@ class GeneticAlgorithm
     void openFile(int epochs)
     {
         std::string path =
-            std::string("graphs/") + file_prefix +
+            std::string("../graphs/") + file_prefix +
             std::string("_epochs=") + std::to_string(epochs) +
             std::string("_pop=") + std::to_string(pop_size) +
             std::string("_cross=") + std::to_string(cross_prob) +
@@ -152,6 +153,19 @@ class GeneticAlgorithm
             std::string(".txt");
         stats_file.open(path, std::ios::trunc | std::fstream::in | std::fstream::out);
         file_good = stats_file.good();
+        if(!file_good)
+            std::cerr << "Could not open " << path << '\n';
+    }
+
+    void openIterFile() {
+        std::string path =
+            std::string("../graphs/") + file_prefix + std::string(".iters");
+        iter
+        file_iter_good = 
+    }
+
+    void dumpBestChrom() {
+
     }
 
 public:
@@ -218,6 +232,9 @@ public:
                 dumpStats();
             }
         }
+
+        while(local(best_chrom_ever)); //full 2opt
+
         if (file_good)
             stats_file.close();
     }

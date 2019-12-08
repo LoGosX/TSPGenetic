@@ -150,6 +150,16 @@ std::vector<std::pair<int,int>> load_data(std::string path) {
     }    
 }
 
+int lastIndexOf(string p, char c) {
+    int i = -1;
+    for(int j = p.size() - 1; j >= 0; j--)
+        if(p[j] == c){
+            i = j;
+            break;
+        }
+    return i;
+}
+
 void tsp(std::string path, int epochs, int pop_size, float cross_chnc, float mut_chnc, float elitism_percent, int local_search_rate, bool save)
 {    
     auto cities = load_data(path);
@@ -163,7 +173,10 @@ void tsp(std::string path, int epochs, int pop_size, float cross_chnc, float mut
     ga.setElitismPercent(elitism_percent);
     ga.initPopulation(pop_size);
     ga.setLocalSearchRate(local_search_rate);
-    ga.setFilePrefix(path.substr(path.find('/')+1, path.find('.')));
+    int i = lastIndexOf(path, '/');
+    std::string prefix = path.substr(i + 1, path.find('.') - i - 1);
+    if(i != -1)
+        ga.setFilePrefix(prefix);
     ga.run(epochs, save);
     auto best = ga.getBestChromosomeEver();
     std::cout << evaluator.pathDist(best) << std::endl << "1 ";
@@ -180,6 +193,9 @@ int main(int argc, const char * argv[])
     // if(!result){
     //     std::cout << "2opt does not work!\n";
     //     return 0;
+    // }else
+    // {
+    //     std::cout << "2opt works!\n";
     // }
 
     int pop_size = 100;
@@ -199,7 +215,7 @@ int main(int argc, const char * argv[])
             break;
         }
     }
-    if(help || argc < 7)
+    if(help || argc != 9)
     {
         std::cerr << "\nHow to run:\n"
                 << "./OKGen <path_to_dataset> <number_of_generations> <population_size> <crossover_chance (0,1)> <mutation_chance (0,1)> <elitism_percent (0,1)> <local_search_rate> <save results? 0 - no, 1 - yes>\n";
