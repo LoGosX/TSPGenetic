@@ -17,6 +17,7 @@ class GeneticAlgorithm
     Mutator - defines mutation operation on a chromosome
     Evaluator - evaluates the solutions (larger == better)
     ChromosomeCreator - creates and initializes chromosomes
+    LocalSearch - imporves current solution
     */
     Crosser crosser;
     Mutator mutator;

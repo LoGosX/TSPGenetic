@@ -232,6 +232,7 @@ int main(int argc, const char * argv[])
         local_search_rate = std::atoi(argv[7]);
         save = std::atoi(argv[8]);
     }
+
     tsp(file, epochs, pop_size, cross_chnc, mut_chnc, elitism_percent, local_search_rate, save);
     return 0;
 }
