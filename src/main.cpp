@@ -1,125 +1,16 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
-#include <cstdlib>
-#include <ctime>
 #include <string>
 #include "optimal_path.h"
-#include "preProcess.h"
 
 #include "GeneticAlgorithm.h"
-#include "ExampleOperators.h"
 #include "TSPOperators.h"
 #include "2opt.h"
 
-struct GridSearcher
-{
-    float curr;
-    float dx;
-    int steps;
-    int step{0};
-    GridSearcher(float low, float high, int steps) : steps(steps), curr(low), dx((high - low) / steps) {}
-    float next()
-    {
-        float v = curr;
-        curr += dx;
-        step++;
-        return v;
-    }
-};
-
-void test_tsp()
-{
-    auto data = randomCities(11);
-    float best_path = minimumPathLength(data);
-
-    TSPChromCreator creator(data.size());
-    TSPEvaluator evaluator(data);
-    
-    GeneticAlgorithm<TSPChrom, TSPChromCreator, TSPCrosser, TSPMutator, TSPEvaluator, TSPLocalSearch>
-                    ga(creator, TSPCrosser(), TSPMutator(), evaluator, TSPLocalSearch(data));
-    ga.setCrossoverProb(0.1255);
-    ga.setMutationProb(0.001);
-    ga.initPopulation(1000);
-    ga.run(500);
-    auto best = ga.getBestChromosomeEver();
-    std::cout << "Found by GA: " << evaluator.pathDist(best) << std::endl;
-    std::cout << "Optimal: " << best_path << std::endl;
-    std::cout << "0 ";
-    for(int x : ga.getBestChromosomeEver().path)
-        std::cout << x << ' ';
-}
-
-void tsp_grid_search()
-{
-    int n;
-    std::cin >> n;
-    std::vector<std::pair<int, int>> cities(n);
-    for (int i = 0, a, b, c; i < n; i++)
-    {
-        std::cin >> a >> b >> c;
-        cities[i].first = b;
-        cities[i].second = c;
-    }
-
-    float mut_low = 0.0001;
-    float mut_high = 0.25;
-    int mut_res = 10;
-    GridSearcher mut(mut_low, mut_high, mut_res);
-
-    float cross_low = 0.0001;
-    float cross_high = 0.5;
-    int cross_res = 10;
-
-    float pop_low = 100;
-    float pop_high = 5000;
-    int pop_res = 10;
-
-
-    float best_mu, best_cross, best_eval = 1000000;
-    int best_pop;
-    std::vector<int> best_path;
-    for (; mut.step < mut.steps && false;)
-    {
-        float mut_chnc = mut.next();
-        GridSearcher cros(cross_low, cross_high, cross_res);
-        for (; cros.step < cros.steps;)
-        {
-            float cross_chnc = cros.next();
-            
-            GridSearcher pop(pop_low, pop_high, pop_res);
-            for (; pop.step < pop.steps;)
-            {
-                int pop_size = (pop.next() + .5F);
-
-                TSPChromCreator creator(n);
-                TSPEvaluator evaluator(cities);
-                GeneticAlgorithm<TSPChrom, TSPChromCreator, TSPCrosser, TSPMutator, TSPEvaluator, TSPLocalSearch>
-                    ga(creator, TSPCrosser(), TSPMutator(), evaluator, TSPLocalSearch(cities));
-                ga.setCrossoverProb(cross_chnc);
-                ga.setMutationProb(mut_chnc);
-                ga.initPopulation(pop_size);
-                ga.run(500);
-                auto b = ga.getBestChromosomeEver();
-                float val = evaluator.pathDist(b);
-                std::cout << "Mut: " << mut_chnc << " Cross: " << cross_chnc << " Pop: " << pop_size << " Path length: " << val << std::endl;
-                if (val < best_eval)
-                {
-                    best_eval = val;
-                    best_pop = pop_size;
-                    best_mu = mut_chnc;
-                    best_cross = cross_chnc;
-                    best_path = b.path;
-                }
-            }
-        }
-    }
-    std::cout << "Best path: " << best_eval << "\nMut: " << best_mu << "\nCross: " << best_cross << "\nPop: " << best_pop << std::endl;
-}
-
 void writeResults(std::string path, const TSPChrom& best, const TSPEvaluator& eval) {
     path = path.substr(0, path.find('.')) + ".results";
-    std::ofstream file(path, ios::app);
+    std::ofstream file(path, std::ios::app);
     if(file.good()) {
         file << eval.pathDist(best) << "\n1 ";
         for(int i : best.path)
@@ -150,7 +41,7 @@ std::vector<std::pair<int,int>> load_data(std::string path) {
     }    
 }
 
-int lastIndexOf(string p, char c) {
+int lastIndexOf(std::string p, char c) {
     int i = -1;
     for(int j = p.size() - 1; j >= 0; j--)
         if(p[j] == c){
@@ -160,31 +51,28 @@ int lastIndexOf(string p, char c) {
     return i;
 }
 
-void tsp(std::string path, int epochs, int pop_size, float cross_chnc, float mut_chnc, float elitism_percent, int local_search_rate, bool save)
+void tsp(GASettings settings)
 {    
-    auto cities = load_data(path);
+    auto cities = load_data(settings.instance_file_path);
     TSPChromCreator creator(cities.size());
     TSPEvaluator evaluator(cities);
 
     GeneticAlgorithm<TSPChrom, TSPChromCreator, TSPCrosser, TSPMutator, TSPEvaluator, TSPLocalSearch>
                     ga(creator, TSPCrosser(), TSPMutator(), evaluator, TSPLocalSearch(cities));
-    ga.setCrossoverProb(cross_chnc);
-    ga.setMutationProb(mut_chnc);
-    ga.setElitismPercent(elitism_percent);
-    ga.initPopulation(pop_size);
-    ga.setLocalSearchRate(local_search_rate);
-    int i = lastIndexOf(path, '/');
-    std::string prefix = path.substr(i + 1, path.find('.') - i - 1);
+    ga.setSettings(settings);
+    ga.initPopulation();
+    int i = lastIndexOf(settings.instance_file_path, '/');
+    std::string prefix = settings.instance_file_path.substr(i + 1, settings.instance_file_path.find('.') - i - 1);
     if(i != -1)
         ga.setFilePrefix(prefix);
-    ga.run(epochs, save);
+    ga.run();
     auto best = ga.getBestChromosomeEver();
     std::cout << evaluator.pathDist(best) << std::endl << "1 ";
     for(int i : best.path)
         std::cout << i + 1 << ' ';
     std::cout << std::endl;
     
-    writeResults(path, best, evaluator);
+    writeResults(settings.instance_file_path, best, evaluator);
 }
 
 int main(int argc, const char * argv[])
@@ -232,7 +120,15 @@ int main(int argc, const char * argv[])
         local_search_rate = std::atoi(argv[7]);
         save = std::atoi(argv[8]);
     }
-
-    tsp(file, epochs, pop_size, cross_chnc, mut_chnc, elitism_percent, local_search_rate, save);
+    GASettings settings;
+    settings.n_epochs = epochs;
+    settings.pop_size = pop_size;
+    settings.crossover_probability = cross_chnc;
+    settings.mutation_probability = mut_chnc;
+    settings.elitism_percent = elitism_percent;
+    settings.local_search_rate = local_search_rate;
+    settings.save_results = save;
+    settings.instance_file_path = file;
+    tsp(settings);
     return 0;
 }
