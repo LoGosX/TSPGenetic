@@ -8,11 +8,30 @@
 #include "TSPOperators.h"
 #include "2opt.h"
 
-void writeResults(std::string path, const TSPChrom& best, const TSPEvaluator& eval) {
-    path = path.substr(0, path.find('.')) + ".results";
+
+int lastIndexOf(std::string p, char c) {
+    int i = -1;
+    for(int j = p.size() - 1; j >= 0; j--)
+        if(p[j] == c){
+            return j;
+        }
+    return -1;
+}
+
+void writeResults(std::string path, const TSPChrom& best, const TSPEvaluator& eval, GASettings settings) {
+    path += ".results";
+    path = "../datasets/" + path;
     std::ofstream file(path, std::ios::app);
     if(file.good()) {
-        file << eval.pathDist(best) << "\n1 ";
+        std::cout << "Saving results to: " << path << "\n";
+        file << "\nGenerations: " << settings.n_epochs
+            << "\nPopulation: " << settings.pop_size
+            << "\nMutation probability: " << settings.mutation_probability
+            << "\nCrossover probability: " << settings.crossover_probability
+            << "\nElitism percent: " << settings.elitism_percent
+            << "\nLocal search rate: " << settings.local_search_rate << std::endl;
+
+        file << "Distance: " << eval.pathDist(best) << "\nPath: 1 ";
         for(int i : best.path)
             file << i + 1 << ' ';
         file << '\n';
@@ -41,14 +60,19 @@ std::vector<std::pair<int,int>> load_data(std::string path) {
     }    
 }
 
-int lastIndexOf(std::string p, char c) {
-    int i = -1;
-    for(int j = p.size() - 1; j >= 0; j--)
-        if(p[j] == c){
-            i = j;
-            break;
-        }
-    return i;
+std::string getFileName(std::string path)
+{
+    while(path.front() == '.' || path.front() == '/')
+        path = path.substr(1, std::string::npos);
+    int i = path.find('.');
+    path = path.substr(0, i);
+    auto j = path.find('/');
+    while(j != std::string::npos)
+    {
+        path = path.substr(j+1, std::string::npos);
+        j = path.find('/');
+    }
+    return path;
 }
 
 void tsp(GASettings settings)
@@ -61,10 +85,8 @@ void tsp(GASettings settings)
                     ga(creator, TSPCrosser(), TSPMutator(), evaluator, TSPLocalSearch(cities));
     ga.setSettings(settings);
     ga.initPopulation();
-    int i = lastIndexOf(settings.instance_file_path, '/');
-    std::string prefix = settings.instance_file_path.substr(i + 1, settings.instance_file_path.find('.') - i - 1);
-    if(i != -1)
-        ga.setFilePrefix(prefix);
+    std::string prefix = getFileName(settings.instance_file_path);
+    ga.setFilePrefix(prefix);
     ga.run();
     auto best = ga.getBestChromosomeEver();
     std::cout << evaluator.pathDist(best) << std::endl << "1 ";
@@ -72,7 +94,7 @@ void tsp(GASettings settings)
         std::cout << i + 1 << ' ';
     std::cout << std::endl;
     
-    writeResults(settings.instance_file_path, best, evaluator);
+    writeResults(prefix, best, evaluator, settings);
 }
 
 int main(int argc, const char * argv[])
