@@ -119,6 +119,7 @@ struct TSPMutator
     }
 };
 
+
 struct TSPEvaluator
 {
     std::vector<std::pair<int,int>> cities;

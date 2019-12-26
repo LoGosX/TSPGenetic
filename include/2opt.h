@@ -15,47 +15,76 @@ struct TSPLocalSearch
     }
 
     std::vector<std::pair<int, int>> cities;
+    bool full_search;
 
-    TSPLocalSearch(const std::vector<std::pair<int, int>> &cities)
+    TSPLocalSearch(const std::vector<std::pair<int, int>> &cities, bool full_search)
     {
+        this->full_search = full_search; 
         this->cities = cities;
+    }
+
+    std::vector<std::vector<int>> toList(std::vector<int>& path){
+        std::vector<std::vector<int>> connections(3);
+        connections[0].resize((this->cities.size())); //cities on path
+        connections[1].resize(cities.size()); //next
+        connections[2].resize(cities.size()); //prevoius
+        connections[0][0] = 0;
+        for(int i = 0; i < path.size(); i++){
+            connections[0][i+1] = path[i];
+        }
+        for(int i = 0; i < cities.size(); i++){
+            connections[1][i] = connections[0][(i + 1) % connections[0].size()];
+            connections[2][i] = connections[0][(i - 1 + connections[0].size()) % connections[0].size()];
+        }
+        return connections;
     }
 
     bool path2opt(std::vector<int> &path)
     {
-        auto out = [&path]{
-            std::cout << "---------------\n";
-            for (int x : path)
+        auto connections = toList(path); //with added 0   
+
+        bool improved;
+        do{
+            improved = false;
+            for (int i = 0; i < path.size() - 2; i++)
             {
-                if (x == 0)
-                    std::cout << '!';
-                std::cout << x << ' ';
-            }
-            std::cout << std::endl;
-        };
-        path.insert(path.begin(), 0);
-        path.push_back(0);
-        //out();
-        bool improved = false;
-        for (int i = 0; i < path.size() - 2; i++)
-        {
-            for (int j = i + 2; j < path.size() - 1; j++)
-            {
-                if (betterResultForSwap(cities[path[i]], cities[path[i + 1]], cities[path[j]], cities[path[j + 1]]))
+                for (int j = i + 2; j < path.size() - 1; j++)
                 {
-                    int left = i + 1;
-                    int right = j;
-                    std::reverse(path.begin() + left, path.begin() + right + 1);
-                    improved = true;
+                    if (betterResultForSwap(cities[path[i]], cities[path[i + 1]], cities[path[j]], cities[path[j + 1]]))
+                    {
+                         int left = i + 1;
+                         int right = j;
+                         std::reverse(path.begin() + left, path.begin() + right + 1);
+                        improved = true;
+                    }
                 }
             }
-        }
-        //out();
-        path.pop_back();
-        path.erase(path.begin());
-        //out();
+        }while(improved);
+        
         return improved;
     }
+
+    /*
+    bool path2opt2(std::vector<int> &path)
+    {
+        auto connections = toList(path); //with added 0   
+
+        bool improved;
+        do{
+            improved = false;
+            for(int i = 0; i < connections[0].size(); i++){
+                for(int j = i + 2; j < connections[0].size(); j++){
+                    if(betterResultForSwap(cities[connections[0][i]], cities[connections[1][i]], 
+                        cities[connections[0][j]], cities[connections[1][j]])){
+                            connections[1][i] = connections[0][j]
+                        }
+                }
+            }
+        }while(improved);
+        
+        return improved;
+    }
+    */
 
     bool operator()(TSPChrom &chrom)
     {
