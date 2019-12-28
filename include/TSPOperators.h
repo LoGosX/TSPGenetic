@@ -6,11 +6,60 @@
 #include <cmath>
 #define DEBUG false 
 
+struct TSPChromList
+{
+    struct Node {
+        int val;
+        Node* connections[2];
+        Node*& next(Node* node_before) {
+            return (connections[0] != node_before ? connections[0] : connections[1]);
+        }
+        Node*& last(Node* node_before) {
+            return (connections[0] == node_before ? connections[0] : connections[1]);
+        }
+        Node(int val) : val(val) {}
+    };
+    std::vector<std::unique_ptr<Node>> _nodes;
+    std::vector<int> initial_path;
+    TSPChromList(const std::vector<int>& path) {
+        initial_path = path;
+        _nodes.resize(path.size() + 1);
+        _nodes.front().reset(new Node(0));
+        for(int i = 0; i < path.size(); i++) {
+            _nodes[i+1].reset(new Node(path[i]));
+            _nodes[i+1]->connections[0] = _nodes[i].get();
+            _nodes[i]->connections[1] = _nodes[i+1].get();
+        }
+        _nodes.front()->connections[0] = _nodes.back().get();
+        _nodes.back()->connections[1] = _nodes.front().get();
+    }
+    
+    //without city with index 0
+    std::vector<int> to_path(int number_of_cities_without_starting_city) {
+        auto node = _nodes[0].get();
+        Node* before = node->connections[0];
+        std::vector<int> path(number_of_cities_without_starting_city);
+        while(node->val == 0) {
+            auto tmp = node;
+            node = node->next(before);
+            before = tmp;
+        }
+        for(auto& x : path) {
+            x = node->val;
+            auto tmp = node;
+            node = node->next(before);
+            before = tmp;
+            }
+        return path;
+    }
+};
+
 //cities numbered from 0 !!!
 struct TSPChrom
 {
     std::vector<int> path;
 };
+
 
 struct TSPChromCreator
 {

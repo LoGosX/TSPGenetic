@@ -99,15 +99,14 @@ void tsp(GASettings settings)
 
 int main(int argc, const char * argv[])
 {
-    // bool result = validate2opt();
-    // if(!result){
-    //     std::cout << "2opt does not work!\n";
-    //     return 0;
-    // }else
-    // {
-    //     std::cout << "2opt works!\n";
-    // }
-
+    bool result = validate2opt();
+    if(!result){
+        std::cout << "2opt does not work!\n";
+        return 0;
+    }else
+    {
+        std::cout << "2opt works!\n";
+    }
     int pop_size = 100;
     int epochs = 500;
     float cross_chnc = 0.01;

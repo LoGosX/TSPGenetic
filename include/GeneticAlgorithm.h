@@ -103,6 +103,9 @@ void GeneticAlgorithm<A, B, C, D, E, F>::run()
     }
     for (int i = 0; i < settings.n_epochs; i++)
     {
+        if((i + 1) % 10 == 0) {
+            std::cout << i + 1 << '/' << settings.n_epochs << '\n';
+        }
         chooseNextPopulation();
         crossover();
         mutate();
