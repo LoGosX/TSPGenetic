@@ -7,3 +7,4 @@ build/*
 *.code-workspace
 plots/*
 graphs/*
+datasets/*.results
