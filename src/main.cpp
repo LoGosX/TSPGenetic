@@ -31,7 +31,8 @@ void writeResults(std::string path, const TSPChrom& best, const TSPEvaluator& ev
             << "\nElitism percent: " << settings.elitism_percent
             << "\nLocal search rate: " << settings.local_search_rate << std::endl;
 
-        file << "Distance: " << eval.pathDist(best) << "\nPath: 1 ";
+        file << "Distance: " << eval.pathDist(best) << std::endl;
+        file << "\nPath: 1 ";
         for(int i : best.path)
             file << i + 1 << ' ';
         file << '\n';
@@ -89,24 +90,26 @@ void tsp(GASettings settings)
     ga.setFilePrefix(prefix);
     ga.run();
     auto best = ga.getBestChromosomeEver();
-    std::cout << evaluator.pathDist(best) << std::endl << "1 ";
+    std::cout << evaluator.pathDist(best) << std::endl;
+    /*
+    std::cout << "1 ";
     for(int i : best.path)
         std::cout << i + 1 << ' ';
     std::cout << std::endl;
-    
+    */
     writeResults(prefix, best, evaluator, settings);
 }
 
 int main(int argc, const char * argv[])
 {
-    bool result = validate2opt();
-    if(!result){
-        std::cout << "2opt does not work!\n";
-        return 0;
-    }else
-    {
-        std::cout << "2opt works!\n";
-    }
+    //bool result = validate2opt();
+    //if(!result){
+    //    std::cout << "2opt does not work!\n";
+    //    return 0;
+    //}else
+    //{
+    //    std::cout << "2opt works!\n";
+    //}
     int pop_size = 100;
     int epochs = 500;
     float cross_chnc = 0.01;
