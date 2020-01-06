@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10.1)
 
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+set(CMAKE_CXX_FLAGS_RELEASE "-O2")
 
 
 set(CMAKE_CXX_STANDARD 17)

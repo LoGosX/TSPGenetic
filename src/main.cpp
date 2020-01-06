@@ -31,8 +31,7 @@ void writeResults(std::string path, const TSPChrom& best, const TSPEvaluator& ev
             << "\nElitism percent: " << settings.elitism_percent
             << "\nLocal search rate: " << settings.local_search_rate << std::endl;
 
-        file << "Distance: " << eval.pathDist(best) << std::endl;
-        file << "\nPath: 1 ";
+        file << "Distance: " << eval.pathDist(best) << "\nPath: 1 ";
         for(int i : best.path)
             file << i + 1 << ' ';
         file << '\n';
