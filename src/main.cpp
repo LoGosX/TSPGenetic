@@ -46,11 +46,12 @@ std::vector<std::pair<int,int>> load_data(std::string path) {
         int n;
         file >> n;
         std::vector<std::pair<int, int>> cities(n);
-        for (int i = 0, a, b, c; i < n; i++)
+        float x, y;
+        for (int i = 0, a; i < n; i++)
         {
-            file >> a >> b >> c;
-            cities[i].first = b;
-            cities[i].second = c;
+            file >> a >> x >> y;
+            cities[i].first = x;
+            cities[i].second = y;
         }
         return cities;
     }else
