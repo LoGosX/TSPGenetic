@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <algorithm>
+#include <execution>
 #include <utility>
 #include <fstream>
 #include <string>
@@ -111,14 +112,22 @@ void GeneticAlgorithm<A, B, C, D, E, F>::run()
         mutate();
         if ((i + 1) % std::abs(settings.local_search_rate) == 0)
         {
-            #pragma omp parallel for
-            for (auto &chrom : population)
-            {
-                if (settings.local_search_rate < 0)
-                    while (local(chrom));
-                else
-                    local(chrom);   
-            }
+            if (settings.local_search_rate < 0){
+                std::for_each(
+                    std::execution::par_unseq,
+                    population.begin(),
+                    population.end(),
+                    [&](auto&& chrom){ while(local(chrom)); }
+                    );
+                }
+            else{
+                std::for_each(
+                    std::execution::par_unseq,
+                    population.begin(),
+                    population.end(),
+                    local
+                    );
+                }
         }
         if (file_good)
         {
@@ -218,10 +227,17 @@ void GeneticAlgorithm<A, B, C, D, E, F>::crossover()
 template <typename A, typename B, typename C, typename D, typename E, typename F>
 void GeneticAlgorithm<A, B, C, D, E, F>::mutate()
 {
-    #pragma omp parallel for
+    /*
     for (int i = settings.pop_size * settings.elitism_percent; i < settings.pop_size; i++)
         if (randomFloat() < settings.mutation_probability)
             mutator(population[i]);
+    */
+    std::for_each(
+        std::execution::par_unseq,
+        population.begin() + settings.pop_size * settings.elitism_percent,
+        population.end(),
+        mutator
+    );
 }
 
 template <typename A, typename B, typename C, typename D, typename E, typename F>

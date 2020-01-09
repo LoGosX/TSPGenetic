@@ -14,11 +14,9 @@ SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_HOME_DIRECTORY}/build")
 SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_HOME_DIRECTORY}/build")
 
 project(OKGen)
-find_package(OpenMP REQUIRED)
 
 include_directories("include")
 file(GLOB SOURCES "src/*.cpp")
 file(GLOB HEADERS "include/*.h")
 
 add_executable(OKGen ${SOURCES} ${HEADERS})
-target_link_libraries(OKGen PRIVATE OpenMP::OpenMP_CXX)
