@@ -1,3 +1,5 @@
+#!/bin/bash
+
 cd build
 if [ -e "OKGen" ]; then
     ./OKGen ../"$1" "${@:2}"
