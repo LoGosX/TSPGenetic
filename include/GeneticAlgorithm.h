@@ -1,7 +1,11 @@
 #pragma once
+
+#ifdef _MSC_VER
+#include <execution>
+#endif
+
 #include <vector>
 #include <algorithm>
-#include <execution>
 #include <utility>
 #include <fstream>
 #include <string>
@@ -113,6 +117,7 @@ void GeneticAlgorithm<A, B, C, D, E, F>::run()
         if ((i + 1) % std::abs(settings.local_search_rate) == 0)
         {
             if (settings.local_search_rate < 0){
+#ifdef _MSC_VER
                 std::for_each(
                     std::execution::par_unseq,
                     population.begin(),
@@ -120,7 +125,13 @@ void GeneticAlgorithm<A, B, C, D, E, F>::run()
                     [&](auto&& chrom){ while(local(chrom)); }
                     );
                 }
+#else
+                #pragma omp parallel for
+                for(auto& chrom : population)
+                    while(local(chrom));
+#endif
             else{
+#ifdef _MSC_VER
                 std::for_each(
                     std::execution::par_unseq,
                     population.begin(),
@@ -128,6 +139,11 @@ void GeneticAlgorithm<A, B, C, D, E, F>::run()
                     local
                     );
                 }
+#else
+                #pragma omp parallel for
+                for(auto& chrom : population)
+                    local(chrom);
+#endif
         }
         if (file_good)
         {
@@ -135,8 +151,7 @@ void GeneticAlgorithm<A, B, C, D, E, F>::run()
             dumpStats();
         }
     }
-    while (local(best_chrom_ever))
-        ; //full 2opt
+    while (local(best_chrom_ever)); //full 2opt
     if (file_good)
         stats_file.close();
 }
