@@ -128,7 +128,12 @@ void GeneticAlgorithm<A, B, C, D, E, F>::run()
                 for(auto& chrom : population)
                     while(local(chrom));
 #endif
+<<<<<<< HEAD
             }else{
+=======
+            }
+            else{
+>>>>>>> 64aad7215273a3340a70cba1a1ae9a7982ab2686
 #ifdef _MSC_VER
                 std::for_each(
                     std::execution::par_unseq,
