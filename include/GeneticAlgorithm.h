@@ -1,11 +1,10 @@
 #pragma once
 
+#include <vector>
+#include <algorithm>
 #ifdef _MSC_VER
 #include <execution>
 #endif
-
-#include <vector>
-#include <algorithm>
 #include <utility>
 #include <fstream>
 #include <string>
@@ -124,13 +123,12 @@ void GeneticAlgorithm<A, B, C, D, E, F>::run()
                     population.end(),
                     [&](auto&& chrom){ while(local(chrom)); }
                     );
-                }
 #else
                 #pragma omp parallel for
                 for(auto& chrom : population)
                     while(local(chrom));
 #endif
-            else{
+            }else{
 #ifdef _MSC_VER
                 std::for_each(
                     std::execution::par_unseq,
@@ -138,15 +136,15 @@ void GeneticAlgorithm<A, B, C, D, E, F>::run()
                     population.end(),
                     local
                     );
-                }
 #else
                 #pragma omp parallel for
                 for(auto& chrom : population)
                     local(chrom);
 #endif
+            }
         }
-        if (file_good)
-        {
+
+        if (file_good){
             measureStatictics(false);
             dumpStats();
         }
@@ -242,17 +240,20 @@ void GeneticAlgorithm<A, B, C, D, E, F>::crossover()
 template <typename A, typename B, typename C, typename D, typename E, typename F>
 void GeneticAlgorithm<A, B, C, D, E, F>::mutate()
 {
-    /*
-    for (int i = settings.pop_size * settings.elitism_percent; i < settings.pop_size; i++)
-        if (randomFloat() < settings.mutation_probability)
-            mutator(population[i]);
-    */
+    
+#ifdef _MSC_VER
     std::for_each(
         std::execution::par_unseq,
         population.begin() + settings.pop_size * settings.elitism_percent,
         population.end(),
         mutator
     );
+#else
+    #pragma omp parallel for
+    for (int i = settings.pop_size * settings.elitism_percent; i < settings.pop_size; i++)
+            if (randomFloat() < settings.mutation_probability)
+                mutator(population[i]);
+#endif        
 }
 
 template <typename A, typename B, typename C, typename D, typename E, typename F>

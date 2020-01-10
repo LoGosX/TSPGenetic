@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <algorithm>
+#include <memory>
 #include "math_helpers.h"
 #include <iostream>
 #include <cmath>

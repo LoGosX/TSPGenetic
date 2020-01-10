@@ -98,4 +98,5 @@ bool validate2opt()
             last_path_dist = dist;
         }while(improved);
     }
+    return true;
 }
