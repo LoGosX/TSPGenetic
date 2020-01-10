@@ -124,12 +124,12 @@ void GeneticAlgorithm<A, B, C, D, E, F>::run()
                     population.end(),
                     [&](auto&& chrom){ while(local(chrom)); }
                     );
-                }
 #else
                 #pragma omp parallel for
                 for(auto& chrom : population)
                     while(local(chrom));
 #endif
+            }
             else{
 #ifdef _MSC_VER
                 std::for_each(
@@ -138,12 +138,12 @@ void GeneticAlgorithm<A, B, C, D, E, F>::run()
                     population.end(),
                     local
                     );
-                }
 #else
                 #pragma omp parallel for
                 for(auto& chrom : population)
                     local(chrom);
 #endif
+            }
         }
         if (file_good)
         {
