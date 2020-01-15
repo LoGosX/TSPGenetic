@@ -96,6 +96,7 @@ public:
 template <typename A, typename B, typename C, typename D, typename E, typename F>
 void GeneticAlgorithm<A, B, C, D, E, F>::run()
 {
+    std::cout << evaluator.pathDist(population.front()) <<'\n';
     if (settings.save_results)
     {
         openFile();
@@ -107,14 +108,17 @@ void GeneticAlgorithm<A, B, C, D, E, F>::run()
     }
     for (int i = 0; i < settings.n_epochs; i++)
     {
-        if((i + 1) % 10 == 0) {
-            std::cout << i + 1 << '/' << settings.n_epochs << std::endl;
-        }
         chooseNextPopulation();
         crossover();
         mutate();
         if ((i + 1) % std::abs(settings.local_search_rate) == 0)
         {
+            auto& chr = population[cum_dist.back().second];
+            std::cout<<"[np.array([ ";
+            for(int x : chr.path)
+                std::cout << x << ", ";
+            std::cout << 0 << ", " << chr.path.front();
+            std::cout << "]), " << evaluator.pathDist(chr) << "],\n";
             if (settings.local_search_rate < 0){
 #ifdef _MSC_VER
                 std::for_each(
@@ -128,12 +132,7 @@ void GeneticAlgorithm<A, B, C, D, E, F>::run()
                 for(auto& chrom : population)
                     while(local(chrom));
 #endif
-<<<<<<< HEAD
             }else{
-=======
-            }
-            else{
->>>>>>> 64aad7215273a3340a70cba1a1ae9a7982ab2686
 #ifdef _MSC_VER
                 std::for_each(
                     std::execution::par_unseq,
@@ -147,6 +146,11 @@ void GeneticAlgorithm<A, B, C, D, E, F>::run()
                     local(chrom);
 #endif
             }
+            std::cout << "[np.array([ ";
+            for(int x : chr.path)
+                std::cout << x << ", ";
+            std::cout << 0 << ", " << chr.path.front();
+            std::cout << "]), " << evaluator.pathDist(chr) << "],\n";
         }
 
         if (file_good){
@@ -157,6 +161,11 @@ void GeneticAlgorithm<A, B, C, D, E, F>::run()
     while (local(best_chrom_ever)); //full 2opt
     if (file_good)
         stats_file.close();
+    std::cout<<"[np.array([ ";
+    for(int x : best_chrom_ever.path)
+        std::cout << x << ", ";
+    std::cout << 0 << ", " << best_chrom_ever.path.front();
+    std::cout << "]), " << evaluator.pathDist(best_chrom_ever) << "],\n";
 }
 
 template <typename A, typename B, typename C, typename D, typename E, typename F>
@@ -300,7 +309,7 @@ void GeneticAlgorithm<A, B, C, D, E, F>::initPopulation()
 {
     population = std::vector<A>(settings.pop_size, creator());
     for (auto &chrom : population)
-        creator(chrom); //random initialize chromosome
+        chrom.path = {3, 1, 13, 8, 4, 6, 2, 14, 10, 7, 12, 9, 5, 11};
     evaluations.resize(settings.pop_size);
     cum_dist.resize(settings.pop_size);
 }

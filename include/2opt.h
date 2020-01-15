@@ -11,7 +11,7 @@ struct TSPLocalSearch
     {
         float basic = dist(a, b) + dist(c, d);
         float swapped = dist(a, c) + dist(b, d);
-        return swapped < basic && (basic - swapped) > 0.1f;
+        return swapped < basic;
     }
 
     std::vector<t_city> cities;
@@ -31,35 +31,37 @@ struct TSPLocalSearch
         bool improved;
         const int N = path.size() + 1;
         do{
-            improved = false;
-            TSPChromList::Node* node = connections._nodes[0].get();
-            auto before = node->connections[0];
-            for(int i = 0; i < N - 2; i++) {
-                auto before_next = node->next(before);
-                auto next = before_next->next(node);
-                for(int j = i + 2; j < N - 1; j++) {
-                    if(betterResultForSwap(
-                        cities[node->val], cities[node->next(before)->val], 
-                        cities[next->val], cities[next->next(before_next)->val]
-                        )) {
-                            //std::cout << node->val << "->" << node->next(before)->val << ' ' << next->val << "->" << next->next(before_next)->val << '\n';
-                            auto node_next = node->next(before);
-                            auto next_next = next->next(before_next);
-                            node_next->last(node) = next_next;
-                            next_next->last(next) = node_next;
-                            node->next(before) = next;
-                            next->next(before_next) = node;
-                            improved = true;
-                            break;
-                        }
-                    auto tmp = next;
-                    next = next->next(before_next);
-                    before_next = tmp;
+            [&]{
+                improved = false;
+                TSPChromList::Node* node = connections._nodes[0].get();
+                auto before = node->connections[0];
+                for(int i = 0; i < N - 1; i++) {
+                    auto before_next = node->next(before);
+                    auto next = before_next->next(node);
+                    for(int j = i + 2; j < N; j++) {
+                        if(betterResultForSwap(
+                            cities[node->val], cities[node->next(before)->val], 
+                            cities[next->val], cities[next->next(before_next)->val]
+                            )) {
+                                //std::cout << node->val << "->" << node->next(before)->val << ' ' << next->val << "->" << next->next(before_next)->val << '\n';
+                                auto node_next = node->next(before);
+                                auto next_next = next->next(before_next);
+                                node_next->last(node) = next_next;
+                                next_next->last(next) = node_next;
+                                node->next(before) = next;
+                                next->next(before_next) = node;
+                                improved = true;
+                                return;
+                            }
+                        auto tmp = next;
+                        next = next->next(before_next);
+                        before_next = tmp;
+                    }
+                    auto tmp = node;
+                    node = node->next(before);
+                    before = tmp;
                 }
-                auto tmp = node;
-                node = node->next(before);
-                before = tmp;
-            }       
+            }();
         }while(full_search && improved);
         
         path = connections.to_path(path.size());
